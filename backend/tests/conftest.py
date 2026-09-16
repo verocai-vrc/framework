@@ -77,8 +77,33 @@ async def neo4j(settings: Settings) -> AsyncIterator[Neo4jClient]:
         await db.close()
 
 
+@pytest.fixture
+async def live_client(neo4j: Neo4jClient) -> AsyncIterator[AsyncClient]:
+    """HTTP client against the app wired to the real database (integration tests)."""
+    app = create_app()
+    app.state.db = neo4j
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        yield ac
+
+
+@pytest.fixture
+async def project(live_client: AsyncClient) -> AsyncIterator[dict[str, Any]]:
+    """A throwaway project (with an Organizacao anchor), deleted after the test."""
+    res = await live_client.post(
+        "/api/projects",
+        json={"name": "pytest project", "org_name": "Example Org", "seed_domain": "example.test"},
+    )
+    assert res.status_code == 201, res.text
+    proj = res.json()
+    try:
+        yield proj
+    finally:
+        await live_client.delete(f"/api/projects/{proj['id']}")
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     # Give every test that uses the real database the ``neo4j`` marker automatically.
     for item in items:
-        if "neo4j" in getattr(item, "fixturenames", ()):
+        names = getattr(item, "fixturenames", ())
+        if "neo4j" in names or "live_client" in names or "project" in names:
             item.add_marker(pytest.mark.neo4j)

@@ -13,8 +13,9 @@ from fastapi.staticfiles import StaticFiles
 from app import __version__
 from app.config import FRONTEND_DIR, get_settings
 from app.db.driver import Neo4jClient, Neo4jUnavailable
+from app.errors import DomainError
 from app.i18n import t
-from app.routers import health
+from app.routers import edges, health, nodes, projects, schema
 
 log = logging.getLogger("app")
 
@@ -42,6 +43,23 @@ def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name, version=__version__, lifespan=lifespan)
 
     app.include_router(health.router)
+    app.include_router(schema.router)
+    app.include_router(projects.router)
+    app.include_router(nodes.router)
+    app.include_router(edges.router)
+
+    @app.exception_handler(DomainError)
+    async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
+        locale = request.headers.get("x-locale", settings.default_locale)
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "detail": t(exc.key, locale, **exc.extra) or exc.message,
+                "code": exc.key,
+                "message": exc.message,
+                **exc.extra,
+            },
+        )
 
     @app.exception_handler(Neo4jUnavailable)
     async def _neo4j_unavailable(_: Request, exc: Neo4jUnavailable) -> JSONResponse:
