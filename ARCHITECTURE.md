@@ -62,7 +62,8 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `app/models/schema_info.py` | `GET /api/schema` payload: labels, fields, rel types, allowed edges. Drives the UI palette. |
 | `app/graph/crud.py`    | Node/edge CRUD; refuses disallowed `(source, rel, target)` triples with a hint; stamps provenance; computes `cross_axis`. |
 | `app/graph/projects.py`| Project CRUD; creating a project with `org_name` creates its `Organizacao` anchor. |
-| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges` (all under `/api`). |
+| `app/graph/io.py`      | Export (`osintree/1`, lossless incl. ids/provenance) and import: typed files (ids kept unless they collide) and the reference tool's legacy `{meta, nodes, edges}` format (best-effort, warnings, anchoring edges, unknown types become re-typable defaults). |
+| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges`, `io` (all under `/api`). |
 
 ## Data model conventions
 
@@ -81,10 +82,18 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `js/schema.js` | Loads `/api/schema`; display names, axis colours, shapes, `allowedRels(src, dst)`. |
 | `js/modals.js` | Modal host, confirm dialog, schema-driven form inputs. |
 | `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook. |
+| `js/editor.js` | Entity editor: title, typed attributes, layer, description, Markdown notes (marked preview), metadata, neighbours, provenance; debounced autosave; re-type dialog; edge editor (impact override, weight, notes). |
 | `js/app.js`    | Glue: projects, toolbar, node/edge dialogs, selection → editor. Exposes `window.App`. |
 
 Node property storage: attribute models are flattened onto the Neo4j node (so `Dominio.name`,
 `Endereco_IP.address`, `CVE.cve_id` indexes apply); `metadata` is stored as `metadata_json`.
+
+## Import / export
+
+`GET /api/projects/{id}/export` returns the typed format (`format: "osintree/1"`) as a download.
+`POST /api/projects/import` detects the format: typed files round-trip losslessly (ids are kept
+unless they already exist, in which case all ids are remapped); legacy files are migrated with a
+warning list. Downloads inside the native window go through pywebview's Save dialog.
 
 ## Resilience
 

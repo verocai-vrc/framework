@@ -18,6 +18,7 @@
     <label class="inline-label" for="project-select" data-i18n="project.label">Project</label>
     <select id="project-select" class="select-compact"></select>
     <button id="btn-new-project" class="btn-sm" data-i18n="project.new">＋ New project</button>
+    <button id="btn-project-settings" class="btn-sm btn-icon" data-i18n-title="project.settings" title="Project settings">⚙</button>
   </div>
   <div class="topbar-right">
     <span class="badge badge-guard" id="badge-passive" data-i18n-title="guard.tooltip">
@@ -49,8 +50,17 @@
     </section>
 
     <section class="panel tools-panel">
-      <h2 data-i18n="tools.title">Tools &amp; collectors</h2>
-      <p class="muted" data-i18n="tools.empty">Collectors arrive in Sprint 3.</p>
+      <div class="tools-head">
+        <h2 data-i18n="tools.title">Tools &amp; collectors</h2>
+        <div class="io-actions">
+          <button id="btn-export" class="btn-sm" data-i18n="io.export">↓ Export JSON</button>
+          <button id="btn-import" class="btn-sm" data-i18n="io.import">↑ Import JSON</button>
+          <input type="file" id="input-import" accept=".json,application/json" hidden>
+        </div>
+      </div>
+      <div id="tools-body">
+        <p class="muted" data-i18n="tools.empty">Collectors arrive in Sprint 3.</p>
+      </div>
     </section>
   </div>
 
@@ -72,11 +82,13 @@
 <div id="toast-host" class="toast-host" aria-live="polite"></div>
 
 <script src="vendor/vis-network.min.js"></script>
+<script src="vendor/marked.umd.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/schema.js"></script>
 <script src="js/modals.js"></script>
 <script src="js/graph.js"></script>
+<script src="js/editor.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

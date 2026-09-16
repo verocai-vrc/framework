@@ -135,7 +135,7 @@ Built sprint by sprint from `project-brief.md`:
 
 - [x] Sprint 0 — foundations: Neo4j, health-checked API, schema, UI shell
 - [x] Sprint 1 — typed graph core and manual CRUD
-- [ ] Sprint 2 — editor, notes, projects, import/export
+- [x] Sprint 2 — editor, notes, projects, import/export
 - [ ] Sprint 3 — passive collectors with review gate
 - [ ] Sprint 4 — correlation and risk analysis, report
 - [ ] Sprint 5 — polish, packaging, docs

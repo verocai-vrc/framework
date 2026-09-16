@@ -223,3 +223,57 @@ div.vis-tooltip {
   border: 1px solid var(--border-strong) !important; border-radius: 6px !important;
   padding: 4px 8px !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
+
+/* ---- Sprint 2: editor, project settings, import/export ------------------------- */
+.btn-icon { padding: 3px 7px; }
+.badge-btn { cursor: pointer; }
+.badge-btn:hover { background: var(--border); }
+.badge-warn { color: var(--warn); border-color: rgba(210, 153, 34, 0.5); }
+.link { background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
+.link:hover { text-decoration: underline; background: none; }
+
+.title-input { font-size: 16px; font-weight: 600; padding: 4px 6px; background: transparent; border-color: transparent; }
+.title-input:hover { border-color: var(--border); }
+.title-input:focus { background: var(--bg-0); }
+.save-status { font-size: 11px; font-family: var(--font-mono); color: var(--fg-3); margin-left: auto; }
+.save-status[data-state="saving"] { color: var(--warn); }
+.save-status[data-state="saved"] { color: var(--ok); }
+.save-status[data-state="error"] { color: var(--danger); }
+.save-status[data-state="dirty"] { color: var(--fg-2); }
+
+.field-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; margin-bottom: 4px; }
+.field-row label { margin: 0; font-family: var(--font-mono); font-size: 11.5px; }
+.field-row input, .field-row select { padding: 4px 7px; font-size: 12.5px; }
+
+.section-row { display: flex; align-items: flex-end; justify-content: space-between; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: none; border-radius: 0; padding: 2px 9px; font-size: 11.5px; background: transparent; color: var(--fg-2); }
+.seg button.on { background: var(--bg-3); color: var(--fg-0); }
+
+.md { font-size: 13px; line-height: 1.5; padding: 8px 10px; background: var(--bg-0); border: 1px solid var(--border); border-radius: 6px; min-height: 60px; }
+.md h1, .md h2, .md h3 { margin: 0.4em 0 0.3em; font-size: 1.05em; }
+.md h1 { font-size: 1.2em; } .md h2 { font-size: 1.1em; }
+.md p { margin: 0 0 0.6em; } .md ul, .md ol { margin: 0 0 0.6em 1.2em; padding: 0; }
+.md code { font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-3); padding: 1px 4px; border-radius: 3px; }
+.md pre { background: var(--bg-3); padding: 8px; border-radius: 6px; overflow-x: auto; }
+.md a { color: var(--accent); }
+.md blockquote { margin: 0 0 0.6em; padding-left: 10px; border-left: 3px solid var(--border-strong); color: var(--fg-2); }
+.md table { border-collapse: collapse; } .md td, .md th { border: 1px solid var(--border); padding: 2px 6px; }
+
+.meta-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 6px; margin-bottom: 4px; }
+.meta-row input { padding: 4px 7px; font-size: 12px; font-family: var(--font-mono); }
+
+.neighbours { display: flex; flex-direction: column; gap: 3px; }
+.neighbour { display: grid; grid-template-columns: 14px auto 10px 1fr; gap: 6px; align-items: center; text-align: left; padding: 4px 8px; font-size: 12px; background: transparent; }
+.neighbour:hover { background: var(--bg-3); }
+.neighbour .dir { color: var(--fg-3); }
+.neighbour .rel { font-size: 10.5px; color: var(--fg-2); }
+.neighbour .dot { width: 8px; height: 8px; border-radius: 50%; }
+.neighbour .ttl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.editor-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+.tools-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.io-actions { display: flex; gap: 6px; }
+.warn-list { margin: 4px 0 0 1.2em; padding: 0; font-size: 12px; max-height: 240px; overflow-y: auto; }
+.warn-list li { margin-bottom: 3px; color: var(--warn); }

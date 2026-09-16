@@ -1,0 +1,501 @@
+{
+  "meta": {
+    "entidade": "Entidade XYZ",
+    "tipo": "Distribuidora de Energia (cenário semi-sintético)",
+    "versao": "1.0",
+    "seed": "n_dom_raiz"
+  },
+  "nodes": [
+    {
+      "id": "n_entidade",
+      "label": "Entidade XYZ",
+      "tipo": "Organização",
+      "eixo": "central",
+      "page": {
+        "nome": "Entidade XYZ",
+        "descricao": "Distribuidora de energia alvo do mapeamento de superfície de ataque.",
+        "observacoes": [
+          "Setor: energia",
+          "Função: distribuição"
+        ],
+        "metadados": {
+          "setor": "Energia",
+          "porte": "Grande"
+        }
+      }
+    },
+    {
+      "id": "n_esf_digital",
+      "label": "Digital (TI/TO)",
+      "tipo": "Esfera",
+      "eixo": "digital",
+      "page": {
+        "nome": "Esfera Digital",
+        "descricao": "Ativos de TI e Tecnologia Operacional expostos.",
+        "observacoes": [],
+        "metadados": {}
+      }
+    },
+    {
+      "id": "n_esf_humano",
+      "label": "Humano",
+      "tipo": "Esfera",
+      "eixo": "humano",
+      "page": {
+        "nome": "Esfera Humana",
+        "descricao": "Corpo funcional da organização.",
+        "observacoes": [],
+        "metadados": {}
+      }
+    },
+    {
+      "id": "n_esf_fisico",
+      "label": "Físico/Geo",
+      "tipo": "Esfera",
+      "eixo": "fisico",
+      "page": {
+        "nome": "Esfera Física",
+        "descricao": "Instalações físicas e geográficas.",
+        "observacoes": [],
+        "metadados": {}
+      }
+    },
+    {
+      "id": "n_esf_ecossistema",
+      "label": "Ecossistema",
+      "tipo": "Esfera",
+      "eixo": "ecossistema",
+      "page": {
+        "nome": "Esfera de Ecossistema",
+        "descricao": "Cadeia de suprimentos e parceiros.",
+        "observacoes": [],
+        "metadados": {}
+      }
+    },
+    {
+      "id": "n_ferramentas",
+      "label": "Ferramentas",
+      "tipo": "Ferramentas",
+      "eixo": "ferramentas",
+      "page": {
+        "nome": "Ferramentas OSINT",
+        "descricao": "Ferramentas utilizadas na coleta passiva.",
+        "observacoes": [],
+        "metadados": {}
+      }
+    },
+    {
+      "id": "n_dom_raiz",
+      "label": "xyz-energia.example",
+      "tipo": "Domínio",
+      "eixo": "digital",
+      "page": {
+        "nome": "Domínio Raiz",
+        "descricao": "Domínio principal da organização. Ponto de partida da investigação (seed).",
+        "observacoes": [
+          "Seed da investigação OSINT"
+        ],
+        "metadados": {
+          "registro": "2010-03-15",
+          "fonte": "Subfinder/crt.sh"
+        }
+      }
+    },
+    {
+      "id": "n_dom_vpn",
+      "label": "vpn.xyz-energia.example",
+      "tipo": "Domínio",
+      "eixo": "digital",
+      "page": {
+        "nome": "Domínio VPN",
+        "descricao": "Subdomínio da solução de VPN corporativa.",
+        "observacoes": [],
+        "metadados": {
+          "registro": "2015-07-22",
+          "fonte": "Subfinder"
+        }
+      }
+    },
+    {
+      "id": "n_dom_scada",
+      "label": "scada.xyz-energia.example",
+      "tipo": "Domínio",
+      "eixo": "digital",
+      "page": {
+        "nome": "Domínio SCADA",
+        "descricao": "Subdomínio exposto do sistema SCADA — exposição direta de sistema de controle industrial.",
+        "observacoes": [
+          "Exposição crítica: SCADA acessível externamente"
+        ],
+        "metadados": {
+          "registro": "2012-01-08",
+          "fonte": "crt.sh"
+        }
+      }
+    },
+    {
+      "id": "n_ip_10",
+      "label": "200.0.2.10",
+      "tipo": "Endereço_IP",
+      "eixo": "digital",
+      "page": {
+        "nome": "IP Principal",
+        "descricao": "Endereço IP do servidor principal da organização.",
+        "observacoes": [],
+        "metadados": {
+          "asn": "AS12345 - XYZ Energia",
+          "geolocalização": "SP, Brasil",
+          "fonte": "Shodan"
+        }
+      }
+    },
+    {
+      "id": "n_ip_20",
+      "label": "200.0.2.20",
+      "tipo": "Endereço_IP",
+      "eixo": "digital",
+      "page": {
+        "nome": "IP SCADA",
+        "descricao": "Endereço IP do servidor SCADA com protocolo Modbus exposto na internet.",
+        "observacoes": [
+          "Porta 502 acessível externamente — risco crítico"
+        ],
+        "metadados": {
+          "asn": "AS12345 - XYZ Energia",
+          "geolocalização": "SP, Brasil",
+          "fonte": "Shodan/Censys"
+        }
+      }
+    },
+    {
+      "id": "n_svc_vpn",
+      "label": "SSL VPN :443",
+      "tipo": "Serviço",
+      "eixo": "digital",
+      "page": {
+        "nome": "Serviço VPN",
+        "descricao": "Serviço de SSL VPN corporativo (FortiGate). Ponto de entrada remota para a rede interna.",
+        "observacoes": [],
+        "metadados": {
+          "porta": "443",
+          "protocolo": "HTTPS/SSL VPN",
+          "banner": "FortiGate SSL VPN"
+        }
+      }
+    },
+    {
+      "id": "n_svc_modbus",
+      "label": "Modbus :502",
+      "tipo": "Serviço",
+      "eixo": "digital",
+      "page": {
+        "nome": "Serviço Modbus TCP",
+        "descricao": "Protocolo Modbus TCP exposto diretamente na internet, sem autenticação.",
+        "observacoes": [
+          "PROTOCOLO INDUSTRIAL SEM AUTENTICAÇÃO EXPOSTO NA INTERNET"
+        ],
+        "metadados": {
+          "porta": "502",
+          "protocolo": "Modbus TCP",
+          "banner": "Siemens Modbus"
+        }
+      }
+    },
+    {
+      "id": "n_software_fortios",
+      "label": "FortiOS 6.0",
+      "tipo": "Software",
+      "eixo": "digital",
+      "page": {
+        "nome": "FortiOS 6.0",
+        "descricao": "Sistema operacional do FortiGate — versão com vulnerabilidade crítica conhecida (EOL).",
+        "observacoes": [
+          "Versão EOL",
+          "CVE-2018-13379: CVSS 9.8"
+        ],
+        "metadados": {
+          "versão": "6.0.x",
+          "fabricante": "Fortinet"
+        }
+      }
+    },
+    {
+      "id": "n_cve_13379",
+      "label": "CVE-2018-13379",
+      "tipo": "CVE",
+      "eixo": "digital",
+      "page": {
+        "nome": "CVE-2018-13379",
+        "descricao": "Path traversal no FortiOS SSL VPN permitindo leitura de arquivos de sessão com credenciais em texto plano.",
+        "observacoes": [
+          "PoC público disponível",
+          "Explorado ativamente em campanhas APT"
+        ],
+        "metadados": {
+          "id_cve": "CVE-2018-13379",
+          "cvss": "9.8",
+          "vetor": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        }
+      }
+    },
+    {
+      "id": "n_clp",
+      "label": "CLP Siemens S7-300",
+      "tipo": "Dispositivo_Industrial",
+      "eixo": "digital",
+      "page": {
+        "nome": "CLP Siemens S7-300",
+        "descricao": "Controlador Lógico Programável — ATIVO CRÍTICO DE TO. Controla a subestação elétrica. Comprometimento = impacto operacional direto.",
+        "observacoes": [
+          "ATIVO CRÍTICO DE TECNOLOGIA OPERACIONAL",
+          "Alvo final dos vetores de ataque mapeados"
+        ],
+        "metadados": {
+          "protocolo": "Modbus/S7comm",
+          "modelo": "Siemens S7-300"
+        }
+      }
+    },
+    {
+      "id": "n_func_joao",
+      "label": "João M. — Eng. Automação",
+      "tipo": "Funcionário",
+      "eixo": "humano",
+      "page": {
+        "nome": "João M.",
+        "descricao": "Engenheiro de Automação da XYZ Energia. Perfil público identificado via LinkedIn.",
+        "observacoes": [
+          "Perfil LinkedIn detalhado com cargo e empresa",
+          "Mencionado em fórum técnico Siemens S7"
+        ],
+        "metadados": {
+          "cargo": "Engenheiro de Automação",
+          "fonte": "LinkedIn/theHarvester"
+        }
+      }
+    },
+    {
+      "id": "n_cred_joao",
+      "label": "Credencial Vazada (João)",
+      "tipo": "Credencial_Vazada",
+      "eixo": "humano",
+      "page": {
+        "nome": "Credencial Vazada",
+        "descricao": "E-mail corporativo de João encontrado em base de dados vazada com hash de senha MD5.",
+        "observacoes": [
+          "Encontrado via HaveIBeenPwned",
+          "Hash MD5 — facilmente quebrável por dicionário"
+        ],
+        "metadados": {
+          "email": "joao.m@xyz-energia.example",
+          "fonte_vazamento": "HIBP/DeHashed (2021)"
+        }
+      }
+    },
+    {
+      "id": "n_subestacao",
+      "label": "Subestação Central",
+      "tipo": "Instalação_Física",
+      "eixo": "fisico",
+      "page": {
+        "nome": "Subestação Central",
+        "descricao": "Instalação física principal da distribuidora. Localização identificada em registro público de licença ANEEL.",
+        "observacoes": [
+          "Localização obtida em base pública ANEEL"
+        ],
+        "metadados": {
+          "coordenadas": "-23.5505, -46.6333",
+          "tipo_instalação": "Subestação de Energia Elétrica"
+        }
+      }
+    },
+    {
+      "id": "n_fornecedor",
+      "label": "AutomaTI Soluções",
+      "tipo": "Fornecedor",
+      "eixo": "ecossistema",
+      "page": {
+        "nome": "AutomaTI Soluções",
+        "descricao": "Fornecedor responsável pela manutenção dos sistemas de automação industrial. Possui acesso remoto permanente.",
+        "observacoes": [
+          "Contrato identificado em portal de licitações",
+          "Acesso remoto permanente ao IP 200.0.2.20"
+        ],
+        "metadados": {
+          "serviço_prestado": "Manutenção de automação industrial",
+          "fonte": "Portal de Licitações / RDAP"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_1",
+      "from": "n_entidade",
+      "to": "n_esf_digital",
+      "rel": "AGRUPA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_2",
+      "from": "n_entidade",
+      "to": "n_esf_humano",
+      "rel": "AGRUPA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_3",
+      "from": "n_entidade",
+      "to": "n_esf_fisico",
+      "rel": "AGRUPA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_4",
+      "from": "n_entidade",
+      "to": "n_esf_ecossistema",
+      "rel": "AGRUPA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_5",
+      "from": "n_entidade",
+      "to": "n_ferramentas",
+      "rel": "AGRUPA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_6",
+      "from": "n_esf_digital",
+      "to": "n_dom_raiz",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_7",
+      "from": "n_esf_digital",
+      "to": "n_dom_vpn",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_8",
+      "from": "n_esf_digital",
+      "to": "n_dom_scada",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_9",
+      "from": "n_dom_raiz",
+      "to": "n_ip_10",
+      "rel": "RESOLVE_PARA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_10",
+      "from": "n_dom_vpn",
+      "to": "n_ip_10",
+      "rel": "RESOLVE_PARA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_11",
+      "from": "n_dom_scada",
+      "to": "n_ip_20",
+      "rel": "RESOLVE_PARA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_12",
+      "from": "n_ip_10",
+      "to": "n_svc_vpn",
+      "rel": "EXPÕE",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_13",
+      "from": "n_ip_20",
+      "to": "n_svc_modbus",
+      "rel": "EXPÕE",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_14",
+      "from": "n_svc_vpn",
+      "to": "n_software_fortios",
+      "rel": "HOSPEDA",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_15",
+      "from": "n_esf_humano",
+      "to": "n_func_joao",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_16",
+      "from": "n_esf_fisico",
+      "to": "n_subestacao",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_17",
+      "from": "n_esf_ecossistema",
+      "to": "n_fornecedor",
+      "rel": "CONTÉM",
+      "impacto": "estrutural"
+    },
+    {
+      "id": "e_18",
+      "from": "n_software_fortios",
+      "to": "n_cve_13379",
+      "rel": "POSSUI_VULNERABILIDADE",
+      "impacto": "Crítico"
+    },
+    {
+      "id": "e_19",
+      "from": "n_func_joao",
+      "to": "n_cred_joao",
+      "rel": "POSSUI_CREDENCIAL_EXPOSTA",
+      "impacto": "Alto"
+    },
+    {
+      "id": "e_20",
+      "from": "n_cred_joao",
+      "to": "n_svc_vpn",
+      "rel": "VIABILIZA_ACESSO_A",
+      "impacto": "Crítico"
+    },
+    {
+      "id": "e_21",
+      "from": "n_subestacao",
+      "to": "n_clp",
+      "rel": "ABRIGA",
+      "impacto": "Crítico"
+    },
+    {
+      "id": "e_22",
+      "from": "n_fornecedor",
+      "to": "n_ip_20",
+      "rel": "MANTÉM_ACESSO_A",
+      "impacto": "Alto"
+    },
+    {
+      "id": "e_23",
+      "from": "n_svc_vpn",
+      "to": "n_svc_modbus",
+      "rel": "PIVOT_LATERAL",
+      "impacto": "Crítico"
+    },
+    {
+      "id": "e_24",
+      "from": "n_svc_modbus",
+      "to": "n_clp",
+      "rel": "ACESSA_DIRETAMENTE",
+      "impacto": "Crítico"
+    }
+  ]
+}

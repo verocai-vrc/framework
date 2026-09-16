@@ -254,16 +254,26 @@ class NodeCreate(BaseModel):
 
 
 class NodeUpdate(BaseModel):
-    """Partial update; ``attrs`` replaces the whole attribute set when given."""
+    """Partial update; ``attrs`` replaces the whole attribute set when given.
+
+    ``label`` re-types the node (used after a best-effort import); it requires ``attrs``
+    valid for the new label and is refused when an existing edge would become invalid."""
 
     model_config = ConfigDict(extra="forbid")
 
+    label: NodeLabel | None = None
     attrs: dict[str, Any] | None = None
     title: str | None = Field(default=None, max_length=300)
     description: str | None = Field(default=None, max_length=5000)
     notes: str | None = None
     metadata: dict[str, str] | None = None
     layer: Layer | None = None
+
+    @model_validator(mode="after")
+    def _retype_needs_attrs(self) -> NodeUpdate:
+        if self.label is not None and self.attrs is None:
+            raise ValueError("re-typing a node requires attrs for the new label")
+        return self
 
 
 class NodeOut(BaseModel):

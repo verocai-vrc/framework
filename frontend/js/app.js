@@ -59,6 +59,7 @@
   }
 
   async function switchProject(id) {
+    window.Editor.flush();
     state.project = state.projects.find((p) => p.id === id) || null;
     $("project-select").value = id;
     rememberProject(id);
@@ -222,62 +223,105 @@
     }
   }
 
-  // ---- editor (Sprint 1: read-only card; Sprint 2 adds editing) --------------------
-  function clearEditor() {
-    $("editor-placeholder").hidden = false;
-    $("editor-content").hidden = true;
-    $("editor-content").innerHTML = "";
-    $("btn-delete").disabled = true;
-  }
-  function showNode(n) {
-    if (!n) return;
-    $("btn-delete").disabled = false;
-    $("editor-placeholder").hidden = true;
-    const c = $("editor-content");
-    c.hidden = false;
-    const attrs = Object.entries(n.attrs).map(([k, v]) => `<div class="kv"><span class="k">${escape(k)}</span><span class="v">${escape(v)}</span></div>`).join("");
-    c.innerHTML = `
-      <div class="node-header">
-        <h3 class="node-title">${escape(n.title)}</h3>
-        <div class="node-badges">
-          <span class="badge" style="border-color:${Schema.axisColor(n.axis)};color:${Schema.axisColor(n.axis)}">${escape(Schema.display(n.label))}</span>
-          <span class="badge">${n.axis}${n.layer ? " / " + n.layer : ""}</span>
+  // ---- editor (js/editor.js) ------------------------------------------------------
+  const clearEditor = () => window.Editor.clear();
+  const showNode = (n) => window.Editor.showNode(n);
+  const showEdge = (e) => window.Editor.showEdge(e);
+
+  // ---- project settings -----------------------------------------------------------
+  function openProjectSettings() {
+    const p = state.project;
+    if (!p) return openNewProject(true);
+    const box = window.Modals.open(`
+      <h3>${t("project.settings")}</h3>
+      <form id="form-settings">
+        <label>${t("project.name")}</label><input type="text" name="name" required maxlength="120" value="${escape(p.name)}">
+        <label>${t("project.description")}</label><textarea name="description" rows="2" maxlength="2000">${escape(p.description)}</textarea>
+        <label>${t("project.org_name_short")}</label><input type="text" name="org_name" maxlength="200" value="${escape(p.org_name || "")}">
+        <label>${t("project.seed_domain")}</label><input type="text" name="seed_domain" maxlength="253" value="${escape(p.seed_domain || "")}">
+        <div class="kv-list" style="margin-top:10px">
+          <div class="kv"><span class="k">nodes</span><span class="v">${p.node_count}</span></div>
+          <div class="kv"><span class="k">edges</span><span class="v">${p.edge_count}</span></div>
+          <div class="kv"><span class="k">created</span><span class="v">${escape(p.created_at)}</span></div>
+          <div class="kv"><span class="k">id</span><span class="v mono small">${escape(p.id)}</span></div>
         </div>
-      </div>
-      <span class="section-label">${t("editor.attributes")}</span>
-      <div class="kv-list">${attrs || `<span class="muted">—</span>`}</div>
-      ${n.description ? `<span class="section-label">${t("editor.description")}</span><p>${escape(n.description)}</p>` : ""}
-      <span class="section-label">${t("editor.provenance")}</span>
-      <div class="kv-list">
-        <div class="kv"><span class="k">source</span><span class="v">${escape(n.source)}</span></div>
-        <div class="kv"><span class="k">collected_at</span><span class="v">${escape(n.collected_at)}</span></div>
-        <div class="kv"><span class="k">reviewed</span><span class="v">${n.reviewed ? "✓" : "✗"}</span></div>
-      </div>
-      <p class="muted small">${t("editor.soon")}</p>`;
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" id="m-delete">🗑 ${t("project.delete")}</button>
+          <span style="flex:1"></span>
+          <button type="submit" class="btn-primary">${t("common.save")}</button>
+          <button type="button" class="btn-secondary" id="m-cancel">${t("common.cancel")}</button>
+        </div>
+      </form>`);
+    box.querySelector("#m-cancel").onclick = () => window.Modals.close();
+    box.querySelector("#m-delete").onclick = async () => {
+      window.Modals.close();
+      if (!(await window.Modals.confirm(t("project.delete_confirm", { name: p.name }), { danger: true, okLabel: t("common.delete") }))) return;
+      try {
+        await API.del(`/api/projects/${p.id}`);
+        toast(t("project.deleted"), "success");
+        await loadProjects();
+      } catch (err) { showError(err); }
+    };
+    box.querySelector("#form-settings").onsubmit = async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const body = { name: f.get("name").trim(), description: f.get("description") };
+      if (f.get("org_name").trim()) body.org_name = f.get("org_name").trim();
+      if (f.get("seed_domain").trim()) body.seed_domain = f.get("seed_domain").trim();
+      try {
+        const updated = await API.patch(`/api/projects/${p.id}`, body);
+        window.Modals.close();
+        Object.assign(p, updated);
+        $("project-select").querySelector(`option[value="${p.id}"]`).textContent = p.name;
+        toast(t("project.saved"), "success");
+      } catch (err) { showError(err); }
+    };
   }
-  function showEdge(e) {
-    if (!e) return;
-    $("btn-delete").disabled = false;
-    $("editor-placeholder").hidden = true;
-    const c = $("editor-content");
-    c.hidden = false;
-    const a = Graph.node(e.source_id), b = Graph.node(e.target_id);
-    c.innerHTML = `
-      <div class="node-header">
-        <h3 class="node-title mono">${escape(e.rel)}${Schema.isExtension(e.rel) ? ` <span class="badge">${t("edge.ext_mark")}</span>` : ""}</h3>
-      </div>
-      <div class="kv-list">
-        <div class="kv"><span class="k">${t("edge.from")}</span><span class="v">${escape(a ? a.title : e.source_id)}</span></div>
-        <div class="kv"><span class="k">${t("edge.to")}</span><span class="v">${escape(b ? b.title : e.target_id)}</span></div>
-        <div class="kv"><span class="k">cross_axis</span><span class="v">${e.cross_axis ? "✓" : "✗"}</span></div>
-        <div class="kv"><span class="k">impact</span><span class="v">${escape(e.impact || "—")}</span></div>
-      </div>
-      <span class="section-label">${t("editor.provenance")}</span>
-      <div class="kv-list">
-        <div class="kv"><span class="k">source</span><span class="v">${escape(e.source)}</span></div>
-        <div class="kv"><span class="k">collected_at</span><span class="v">${escape(e.collected_at)}</span></div>
-        <div class="kv"><span class="k">reviewed</span><span class="v">${e.reviewed ? "✓" : "✗"}</span></div>
-      </div>`;
+
+  // ---- import / export ------------------------------------------------------------
+  async function exportProject() {
+    if (!state.project) return;
+    window.Editor.flush();
+    try {
+      const res = await fetch(`/api/projects/${state.project.id}/export`);
+      if (!res.ok) throw new Error(res.statusText);
+      const blob = await res.blob();
+      const name = (res.headers.get("content-disposition") || "").match(/filename="([^"]+)"/);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name ? name[1] : "project.osintree.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      toast(t("io.exported"), "success");
+    } catch (err) { showError(err); }
+  }
+
+  async function importFile(file) {
+    let payload;
+    try { payload = JSON.parse(await file.text()); } catch (_) { return toast(t("io.not_json"), "error"); }
+    const name = file.name.replace(/\.osintree\.json$|\.json$/i, "");
+    try {
+      // Typed exports and legacy files carrying meta.entidade name themselves; else use the file name.
+      const named = payload.format || (payload.meta && payload.meta.entidade);
+      const report = await API.post(`/api/projects/import${named ? "" : `?name=${encodeURIComponent(name)}`}`, payload);
+      await loadProjects();
+      await switchProject(report.project.id);
+      const warn = report.warnings.length
+        ? `<span class="section-label">${t("io.warnings")} (${report.warnings.length})</span><ul class="warn-list">${report.warnings.map((w) => `<li>${escape(w)}</li>`).join("")}</ul>`
+        : `<p class="muted">${t("io.no_warnings")}</p>`;
+      const box = window.Modals.open(`
+        <h3>${t("io.report_title")}</h3>
+        <div class="kv-list">
+          <div class="kv"><span class="k">${t("io.format")}</span><span class="v">${escape(report.format)}</span></div>
+          <div class="kv"><span class="k">${t("project.label")}</span><span class="v">${escape(report.project.name)}</span></div>
+          <div class="kv"><span class="k">nodes</span><span class="v">${report.nodes_created}</span></div>
+          <div class="kv"><span class="k">edges</span><span class="v">${report.edges_created}</span></div>
+        </div>
+        ${warn}
+        <div class="modal-actions"><button class="btn-primary" id="m-ok">${t("common.ok")}</button></div>`);
+      box.querySelector("#m-ok").onclick = () => window.Modals.close();
+    } catch (err) { showError(err); }
   }
 
   // ---- boot -----------------------------------------------------------------------
@@ -296,6 +340,10 @@
     $("btn-delete").onclick = deleteSelection;
     $("btn-layout").onclick = () => Graph.relayout();
     $("btn-new-project").onclick = () => openNewProject(false);
+    $("btn-project-settings").onclick = openProjectSettings;
+    $("btn-export").onclick = exportProject;
+    $("btn-import").onclick = () => $("input-import").click();
+    $("input-import").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) importFile(f); };
     $("project-select").onchange = (e) => switchProject(e.target.value).catch(showError);
     document.addEventListener("keydown", (e) => {
       if (window.Modals.isOpen() || ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
@@ -309,7 +357,7 @@
   }
 
   // Public surface for keyboard shortcuts, other modules and UI automation.
-  window.App = { state, openAddNode, openAddEdge, openNewProject, deleteSelection, switchProject, loadProjects, showNode, showEdge, clearEditor, toast };
+  window.App = { state, openAddNode, openAddEdge, openNewProject, openProjectSettings, deleteSelection, switchProject, loadProjects, exportProject, importFile, showNode, showEdge, clearEditor, toast };
 
   document.addEventListener("DOMContentLoaded", boot);
 })();

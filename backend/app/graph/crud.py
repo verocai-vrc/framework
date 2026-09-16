@@ -176,6 +176,19 @@ async def list_nodes(db: Neo4jClient, project_id: str) -> list[NodeOut]:
     return [node_to_out(r["n"], r["labels"]) for r in recs]
 
 
+async def _incident_edges(
+    db: Neo4jClient, node_id: str
+) -> list[tuple[NodeLabel, RelType, NodeLabel, bool]]:
+    """(other label, rel, own role) for every edge touching the node."""
+    recs = await db.run(
+        f"MATCH (n:{ENTITY_LABEL} {{id: $id}})-[r]-(m:{ENTITY_LABEL}) "
+        "RETURN type(r) AS rel, labels(m) AS m_labels, startNode(r) = n AS outgoing",
+        {"id": node_id},
+        readonly=True,
+    )
+    return [(_label_of(r["m_labels"]), RelType(r["rel"]), r["outgoing"]) for r in recs]  # type: ignore[misc]
+
+
 async def update_node(db: Neo4jClient, node_id: str, data: NodeUpdate) -> NodeOut:
     current = await get_node(db, node_id)
     rec = await db.run_one(
@@ -183,15 +196,43 @@ async def update_node(db: Neo4jClient, node_id: str, data: NodeUpdate) -> NodeOu
     )
     assert rec is not None
     props: dict[str, Any] = dict(rec["n"])
+    label = current.label
+
+    if data.label is not None and data.label != current.label:
+        # Re-type: every incident edge must stay valid under the new label.
+        broken = []
+        for other, rel, outgoing in await _incident_edges(db, node_id):
+            ok = (
+                is_allowed_edge(data.label, rel, other)
+                if outgoing
+                else is_allowed_edge(other, rel, data.label)
+            )
+            if not ok:
+                broken.append(f"{data.label.value if outgoing else other.value} -[{rel.value}]-> "
+                              f"{other.value if outgoing else data.label.value}")  # fmt: skip
+        if broken:
+            raise InvalidEdge("re-typing would invalidate existing relationships", broken=broken)
+        label = data.label
+        spec = LABEL_SPECS[label]
+        props["label_display"] = spec.display_pt
+        props["axis"] = spec.axis.value
+        props.pop("layer", None)
+        if spec.default_layer is not None:
+            props["layer"] = spec.default_layer.value
+        await db.run(
+            f"MATCH (n:{ENTITY_LABEL} {{id: $id}}) "
+            f"REMOVE n:{current.label.value} SET n:{label.value}",
+            {"id": node_id},
+        )
 
     if data.attrs is not None:
-        attrs_model = validate_attrs(current.label, data.attrs)
+        attrs_model = validate_attrs(label, data.attrs)
         for key in list(props):
             if key not in RESERVED_PROPS:
                 del props[key]
         props.update(_clean_attrs(attrs_model.model_dump()))
         old_default = validate_attrs(current.label, current.attrs).default_title()
-        if data.title is None and current.title == old_default:
+        if data.title is None and (current.title == old_default or label != current.label):
             # The title was derived from the attributes, so follow them.
             props["title"] = attrs_model.default_title() or current.title
     if data.title is not None:
@@ -203,7 +244,7 @@ async def update_node(db: Neo4jClient, node_id: str, data: NodeUpdate) -> NodeOu
     if data.metadata is not None:
         props["metadata_json"] = json.dumps(data.metadata, ensure_ascii=False)
     if data.layer is not None:
-        layer = resolve_layer(current.label, data.layer)
+        layer = resolve_layer(label, data.layer)
         if layer is not None:
             props["layer"] = layer.value
     props["updated_at"] = utcnow_iso()
