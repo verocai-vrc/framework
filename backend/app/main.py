@@ -17,7 +17,7 @@ from app.config import FRONTEND_DIR, get_settings
 from app.db.driver import Neo4jClient, Neo4jUnavailable
 from app.errors import DomainError
 from app.i18n import t
-from app.routers import collectors, edges, health, io, nodes, projects, review, schema
+from app.routers import analysis, collectors, edges, health, io, nodes, projects, review, schema
 
 log = logging.getLogger("app")
 
@@ -54,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(io.router)
     app.include_router(collectors.router)
     app.include_router(review.router)
+    app.include_router(analysis.router)
 
     @app.exception_handler(DomainError)
     async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:

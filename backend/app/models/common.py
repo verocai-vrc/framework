@@ -35,3 +35,21 @@ class Impact(StrEnum):
     MEDIO = "MEDIO"
     ALTO = "ALTO"
     CRITICO = "CRITICO"
+
+
+class Probability(StrEnum):
+    """Probability levels from thesis Tabela 2 (edge property ``probability``)."""
+
+    BAIXA = "BAIXA"
+    MEDIA = "MEDIA"
+    ALTA = "ALTA"
+
+
+class RiskLevel(StrEnum):
+    """Risk levels from thesis Tabela 2 (edge property ``risk_level``)."""
+
+    MINIMO = "MINIMO"
+    BAIXO = "BAIXO"
+    MEDIO = "MEDIO"
+    ALTO = "ALTO"
+    CRITICO = "CRITICO"

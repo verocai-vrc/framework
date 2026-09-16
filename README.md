@@ -114,7 +114,7 @@ opens the UI in your default browser instead of a window.
 | `make test`    | Full test suite; Neo4j integration tests skip if the DB is down     |
 | `make lint`    | `ruff check` + format check                                         |
 | `make schema`  | Apply and verify constraints/indexes                                |
-| `make seed`    | Load the fixture project (from Sprint 4)                            |
+| `make seed`    | Load the fictional fixture project (all three criteria pass)        |
 | `make reset`   | **Wipe the database** and re-apply the schema                       |
 
 ## Collectors (all passive, all keyless)
@@ -133,6 +133,28 @@ requests are rate-limited per host (NVD: one request every 6 s, the unauthentica
 
 `active_probe_example` is a stub that declares `interacts_with_target = True` and performs
 no network action; it exists to demonstrate the guard refusing it.
+
+## Analysis and report
+
+The **Analysis** tab (tools panel) runs the engine on the current project and never
+collects anything:
+
+1. every relationship is classified — **impact** from thesis Tabela 8, a heuristic
+   **probability**, and the **risk level** from Tabela 2 — and the values are stamped on
+   the edges (canvas colours follow the impact; the edge editor lets you override impact
+   or probability per relationship, or hand them back to the engine with “auto”);
+2. the three validation criteria are evaluated: ≥ 3 of 4 axes covered, a directed
+   seed → OT path exists, ≥ 1 cross-axis relationship is CRITICO/ALTO;
+3. the seed → OT path is highlighted on the canvas — the shortest one by hops (Cypher
+   `shortestPath`) and, when the GDS plugin is installed, the cheapest one by attacker
+   effort (Dijkstra over each edge's `weight`, default 1). *Entry* chooses which anchored
+   nodes may start the path: domains only (the public seed, default) or any anchored node
+   (employees, facilities, suppliers);
+4. central nodes (GDS degree/betweenness, plain degree without GDS) are listed.
+
+**Report**: Markdown, HTML (self-contained, printable) or JSON (analysis + full graph),
+in Portuguese (default, `REPORT_LOCALE`) or English. `make seed` loads a fictional
+“Example Utility” project that satisfies all three criteria, to try this out.
 
 ## Configuration
 
@@ -154,7 +176,7 @@ Built sprint by sprint from `project-brief.md`:
 - [x] Sprint 1 — typed graph core and manual CRUD
 - [x] Sprint 2 — editor, notes, projects, import/export
 - [x] Sprint 3 — passive collectors with review gate
-- [ ] Sprint 4 — correlation and risk analysis, report
+- [x] Sprint 4 — correlation and risk analysis, report
 - [ ] Sprint 5 — polish, packaging, docs
 
 See `ARCHITECTURE.md` for the code map and `METHODOLOGY_MAPPING.md` for how the thesis

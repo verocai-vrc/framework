@@ -69,7 +69,13 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `app/collectors/active_example.py` | Stub with `interacts_with_target = True`; refused by the guard, never contacts anything. |
 | `app/collectors/registry.py` | Discovery, **passive guard** (`check_passive_guard`, applied before seed resolution), seed resolution from a node or a string, run pipeline collect → stage. |
 | `app/review/staging.py` | `:Candidate` store (never `:Entity`); dedupe against pending/approved/in-graph; edit; **merge-on-approve** (`reviewed = true`, `source = collector`); reject; purge. |
-| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges`, `io`, `collectors`, `review` (all under `/api`). |
+| `app/models/analysis.py` | `AnalysisResult` and its parts (`Criterion`, `PathResult`, `RiskEdge`, `CentralityEntry`, `Inventory`), `AnalysisOptions`. |
+| `app/analysis/risk.py` | Tabela 8 rules (`IMPACT_RULES`, matched on endpoint labels in either direction with preconditions), probability heuristic (`estimate_probability`, evidence keys), Tabela 2 matrix (`RISK_MATRIX`, `risk_level`), `stamp_project` writes `impact`/`probability`/`risk_level` to edges honouring `*_manual` overrides. Pure functions over `NodeOut`/`EdgeOut`. |
+| `app/analysis/paths.py` | Seed resolution (`Organizacao` anchor, else seed `Dominio`); Cypher `shortestPath` seed → OT with the anchoring hop reversed; GDS Dijkstra over `weight` via a Cypher projection (anchoring edges collapsed into an undirected `ANCHOR` type); GDS degree/betweenness with a Cypher-degree fallback. Entry policy `digital` (Dominio entry points) or `any`. In-memory GDS graphs are always dropped. |
+| `app/analysis/criteria.py` | The three criteria and `analyse()`, the orchestrator producing one `AnalysisResult`. |
+| `app/analysis/report.py` | One document model rendered to Markdown and HTML (inline CSS, no assets), plus JSON (`osintree-report/1` = analysis + graph). Strings from `app/i18n.py` (`pt`/`en`). |
+| `app/graph/fixture.py` | Fictional fixture project (`osintree seed`, e2e tests): `.test` domains, RFC 5737 addresses, all six Tabela 8 rows fire, both path variants differ. |
+| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges`, `io`, `collectors`, `review`, `analysis` (all under `/api`). |
 
 ## Data model conventions
 
@@ -87,11 +93,12 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `js/api.js`    | `fetch` wrapper; errors carry the server's `detail`. |
 | `js/schema.js` | Loads `/api/schema`; display names, axis colours, shapes, `allowedRels(src, dst)`. |
 | `js/modals.js` | Modal host, confirm dialog, schema-driven form inputs. |
-| `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook. |
+| `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook; edge colour by impact; path overlay (`highlightPath`/`clearHighlight`). |
 | `js/collectors.js` | Tools panel: run collectors on the seed or the selected node; blocked collectors shown locked; review badge. Manual OSINT tool reference list (links only). |
 | `js/review.js` | Review queue modal: pending/approved/rejected tabs, inline edit, approve/reject (single and bulk), purge. |
-| `js/editor.js` | Entity editor: title, typed attributes, layer, description, Markdown notes (marked preview), metadata, neighbours, provenance; debounced autosave; re-type dialog; edge editor (impact override, weight, notes). |
-| `js/app.js`    | Glue: projects, toolbar, node/edge dialogs, selection → editor. Exposes `window.App`. |
+| `js/editor.js` | Entity editor: title, typed attributes, layer, description, Markdown notes (marked preview), metadata, neighbours, provenance; debounced autosave; re-type dialog; edge editor (impact/probability override or “auto”, risk level, weight, notes). |
+| `js/analysis.js` | Analysis tab: run (entry policy, weighted toggle), criteria cards, path cards with canvas highlight, ranked high-impact and unclassified cross-axis edges (click → edge editor), centrality, report download/open (format + locale). |
+| `js/app.js`    | Glue: projects, toolbar, tools-panel tabs, node/edge dialogs, selection → editor. Exposes `window.App`. |
 
 Node property storage: attribute models are flattened onto the Neo4j node (so `Dominio.name`,
 `Endereco_IP.address`, `CVE.cve_id` indexes apply); `metadata` is stored as `metadata_json`.
@@ -117,6 +124,22 @@ graph. Merge stamps `source = <collector>`, the run's `collected_at`, and `revie
 `POST /api/projects/import` detects the format: typed files round-trip losslessly (ids are kept
 unless they already exist, in which case all ids are remapped); legacy files are migrated with a
 warning list. Downloads inside the native window go through pywebview's Save dialog.
+
+## Analysis flow
+
+```
+POST /api/projects/{id}/analysis?entry=digital|any   (body: AnalysisOptions)
+  risk.stamp_project   graph -> Evidence -> assess each edge -> SET impact/probability/risk_level
+  paths.shortest_path_to_ot   Cypher shortestPath, anchoring hop reversed          -> PathResult
+  paths.weighted_path_to_ot   GDS Cypher projection + allShortestPaths.dijkstra    -> PathResult
+  paths.centrality            GDS degree + betweenness (undirected projection)     -> top N
+  criteria.*                  axis coverage / seed-to-OT / high impact             -> AnalysisResult
+GET  /api/projects/{id}/report?format=md|html|json&locale=pt|en&entry=...   re-runs, renders
+```
+
+Edge risk fields are engine-owned unless flagged `impact_manual` / `probability_manual`
+(set by a PATCH with a value, or by a value given at creation/import); `*_manual: false`
+clears the override and the stale `risk_level`.
 
 ## Resilience
 

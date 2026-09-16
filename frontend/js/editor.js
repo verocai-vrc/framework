@@ -37,7 +37,7 @@ window.Editor = (() => {
       const path = target.kind === "node" ? `/api/nodes/${target.id}` : `/api/edges/${target.id}`;
       const saved = await API.patch(path, body);
       if (target.kind === "node") { Graph.upsertNode(saved); if (current && current.id === saved.id) syncHeader(saved); }
-      else Graph.upsertEdge(saved);
+      else { Graph.upsertEdge(saved); if (current && current.id === saved.id && ("impact" in body || "impact_manual" in body || "probability" in body || "probability_manual" in body)) showEdge(saved); }
       setStatus("saved");
     } catch (err) {
       setStatus("error", `${t("editor.save_error")}: ${err.detail || err.message}`);
@@ -242,6 +242,8 @@ window.Editor = (() => {
     pending = {};
     const a = Graph.node(e.source_id), b = Graph.node(e.target_id);
     const impacts = ["", ...Schema.info.impacts];
+    const probabilities = ["", ...(Schema.info.probabilities || [])];
+    const lvl = (v) => (v ? `lvl lvl-${v}` : "");
     $("editor-placeholder").hidden = true;
     const c = $("editor-content");
     c.hidden = false;
@@ -257,8 +259,16 @@ window.Editor = (() => {
         <div class="kv"><span class="k">${t("edge.from")}</span><span class="v"><button class="link neighbour-link" data-id="${e.source_id}">${escape(a ? a.title : e.source_id)}</button></span></div>
         <div class="kv"><span class="k">${t("edge.to")}</span><span class="v"><button class="link neighbour-link" data-id="${e.target_id}">${escape(b ? b.title : e.target_id)}</button></span></div>
       </div>
-      <div class="field-row"><label>${t("edge.impact")}</label>
-        <select id="ed-impact">${impacts.map((i) => `<option value="${i}" ${(e.impact || "") === i ? "selected" : ""}>${i || t("edge.impact_auto")}</option>`).join("")}</select></div>
+      <span class="section-label">${t("edge.risk_section")}</span>
+      <div class="risk-grid">
+        <div class="field-row"><label>${t("edge.impact")}${e.impact_manual ? ` <span class="badge badge-mini">${t("edge.manual")}</span>` : ""}</label>
+          <select id="ed-impact" class="${lvl(e.impact)}">${impacts.map((i) => `<option value="${i}" ${(e.impact_manual ? e.impact : "") === i ? "selected" : ""}>${i || (e.impact ? `${t("edge.auto")} · ${e.impact}` : t("edge.auto"))}</option>`).join("")}</select></div>
+        <div class="field-row"><label>${t("edge.probability")}${e.probability_manual ? ` <span class="badge badge-mini">${t("edge.manual")}</span>` : ""}</label>
+          <select id="ed-probability" class="${lvl(e.probability)}">${probabilities.map((i) => `<option value="${i}" ${(e.probability_manual ? e.probability : "") === i ? "selected" : ""}>${i || (e.probability ? `${t("edge.auto")} · ${e.probability}` : t("edge.auto"))}</option>`).join("")}</select></div>
+        <div class="field-row"><label>${t("edge.risk")}</label>
+          <span class="badge ${lvl(e.risk_level)}" id="ed-risk">${e.risk_level || t("edge.risk_pending")}</span></div>
+      </div>
+      <p class="modal-note">${t("edge.risk_note")}</p>
       <div class="field-row"><label>${t("edge.weight")}</label>
         <input type="number" id="ed-weight" step="any" min="0.01" value="${e.weight ?? ""}" placeholder="1"></div>
       <span class="section-label">${t("editor.notes")}</span>
@@ -272,7 +282,9 @@ window.Editor = (() => {
       <div class="editor-actions">
         <button class="btn-danger" id="ed-delete">🗑 ${t("common.delete")}</button>
       </div>`;
-    $("ed-impact").onchange = (ev) => { if (ev.target.value) queue({ impact: ev.target.value }); };
+    // Picking a level is an analyst override; picking "auto" hands the field back to the engine.
+    $("ed-impact").onchange = (ev) => queue(ev.target.value ? { impact: ev.target.value } : { impact_manual: false });
+    $("ed-probability").onchange = (ev) => queue(ev.target.value ? { probability: ev.target.value } : { probability_manual: false });
     $("ed-weight").oninput = (ev) => { const v = parseFloat(ev.target.value); if (v > 0) queue({ weight: v }); };
     $("ed-edge-notes").oninput = (ev) => queue({ notes: ev.target.value });
     c.querySelectorAll(".neighbour-link").forEach((btn) => { btn.onclick = () => Graph.select(btn.dataset.id); });

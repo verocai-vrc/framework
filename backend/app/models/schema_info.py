@@ -16,7 +16,7 @@ from app.db.schema import (
     NodeLabel,
     RelType,
 )
-from app.models.common import Impact
+from app.models.common import Impact, Probability, RiskLevel
 from app.models.nodes import ATTR_MODELS
 
 
@@ -49,6 +49,8 @@ class SchemaInfo(BaseModel):
     axes: list[Axis]
     validation_axes: list[Axis]
     impacts: list[Impact]
+    probabilities: list[Probability]
+    risk_levels: list[RiskLevel]
 
 
 def _field_type(schema: dict[str, Any], defs: dict[str, Any]) -> tuple[str, list[str] | None]:
@@ -99,4 +101,6 @@ def build_schema_info() -> SchemaInfo:
         axes=list(Axis),
         validation_axes=sorted(VALIDATION_AXES),
         impacts=list(Impact),
+        probabilities=list(Probability),
+        risk_levels=list(RiskLevel),
     )

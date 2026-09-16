@@ -57,8 +57,13 @@ window.Graph = (() => {
   }
   function visEdge(e) {
     const ext = window.Schema.isExtension(e.rel);
-    const base = { id: e.id, from: e.source_id, to: e.target_id, label: e.rel, dashes: ext ? [6, 4] : false };
-    if (e.impact) base.color = { color: impactColor(e.impact), highlight: "#ffffff", hover: impactColor(e.impact) };
+    const risk = [e.impact && `impact ${e.impact}${e.impact_manual ? "*" : ""}`, e.probability && `prob ${e.probability}${e.probability_manual ? "*" : ""}`, e.risk_level && `risk ${e.risk_level}`].filter(Boolean).join(" · ");
+    const base = {
+      id: e.id, from: e.source_id, to: e.target_id, label: e.rel, dashes: ext ? [6, 4] : false,
+      title: `${e.rel}${e.cross_axis ? " · cross-axis" : ""}${risk ? "\n" + risk : ""}`,
+      color: { color: "#3d444d", highlight: "#58a6ff", hover: "#8b949e", opacity: 0.9 }, width: 1.2,
+    };
+    if (e.impact) base.color = { color: impactColor(e.impact), highlight: "#ffffff", hover: impactColor(e.impact), opacity: 0.9 };
     if (e.cross_axis) base.width = 2;
     return base;
   }
@@ -84,6 +89,7 @@ window.Graph = (() => {
   }
 
   function load(graph) {
+    highlight = null;
     raw.nodes = new Map(graph.nodes.map((n) => [n.id, n]));
     raw.edges = new Map(graph.edges.map((e) => [e.id, e]));
     nodes.clear();
@@ -93,8 +99,8 @@ window.Graph = (() => {
     updateEmpty();
     if (network) network.stabilize();
   }
-  function upsertNode(n) { raw.nodes.set(n.id, n); nodes.update(visNode(n)); updateEmpty(); }
-  function upsertEdge(e) { raw.edges.set(e.id, e); edges.update(visEdge(e)); }
+  function upsertNode(n) { raw.nodes.set(n.id, n); nodes.update(highlight && !highlight.nodes.has(n.id) ? { ...visNode(n), opacity: 0.18 } : visNode(n)); updateEmpty(); }
+  function upsertEdge(e) { raw.edges.set(e.id, e); if (highlight && highlight.edges.has(e.id)) return; edges.update(highlight ? { ...visEdge(e), color: { ...visEdge(e).color, opacity: 0.08 } } : visEdge(e)); }
   function removeNode(id) {
     raw.nodes.delete(id);
     for (const [eid, e] of raw.edges) if (e.source_id === id || e.target_id === id) raw.edges.delete(eid);
@@ -107,7 +113,35 @@ window.Graph = (() => {
   function enterAddEdgeMode() { network.addEdgeMode(); document.getElementById("mode-hint").hidden = false; document.getElementById("mode-hint").textContent = window.I18N.t("graph.connect_hint"); }
   function exitMode() { if (network) network.disableEditMode(); document.getElementById("mode-hint").hidden = true; }
   function relayout() { network.stabilize(); }
-  function select(id) { network.selectNodes([id]); handlers.onSelectNode(raw.nodes.get(id)); }
+  function select(id) { network.selectNodes([id]); network.focus(id, { scale: Math.max(network.getScale(), 0.9), animation: { duration: 250 } }); handlers.onSelectNode(raw.nodes.get(id)); }
+  function selectEdge(id) { network.unselectAll(); network.selectEdges([id]); handlers.onSelectEdge(raw.edges.get(id)); }
+
+  /* Path overlay: dim everything, then draw the path nodes/edges on top. Restoring is a
+   * plain re-render from the raw state, so no per-element bookkeeping is needed. */
+  let highlight = null;
+  function highlightPath(nodeIds, edgeIds) {
+    highlight = { nodes: new Set(nodeIds), edges: new Set(edgeIds) };
+    nodes.update([...raw.nodes.values()].map((n) => {
+      const v = visNode(n);
+      return highlight.nodes.has(n.id)
+        ? { ...v, borderWidth: 4, color: { ...v.color, border: "#58a6ff" }, font: { color: "#ffffff" }, opacity: 1 }
+        : { ...v, opacity: 0.18 };
+    }));
+    edges.update([...raw.edges.values()].map((e) => {
+      const v = visEdge(e);
+      return highlight.edges.has(e.id)
+        ? { ...v, width: 4, color: { color: "#58a6ff", highlight: "#ffffff", hover: "#58a6ff", opacity: 1 }, font: { color: "#e6edf3" }, shadow: { enabled: true, color: "rgba(88,166,255,0.6)", size: 10 } }
+        : { ...v, color: { ...v.color, opacity: 0.08 }, font: { color: "#30363d" } };
+    }));
+    network.fit({ nodes: nodeIds, animation: { duration: 400 } });
+  }
+  function clearHighlight() {
+    if (!highlight) return;
+    highlight = null;
+    nodes.update([...raw.nodes.values()].map((n) => ({ ...visNode(n), opacity: 1 })));
+    edges.update([...raw.edges.values()].map((e) => ({ ...visEdge(e), shadow: { enabled: false }, font: { color: "#8b949e" } })));
+  }
+  const isHighlighted = () => highlight !== null;
   function unselect() { network.unselectAll(); }
   function selection() { return { nodes: network.getSelectedNodes(), edges: network.getSelectedEdges() }; }
   const node = (id) => raw.nodes.get(id);
@@ -115,5 +149,5 @@ window.Graph = (() => {
   const allNodes = () => [...raw.nodes.values()];
   const allEdges = () => [...raw.edges.values()];
 
-  return { init, load, upsertNode, upsertEdge, removeNode, removeEdge, enterAddEdgeMode, exitMode, relayout, select, unselect, selection, node, edge, allNodes, allEdges };
+  return { init, load, upsertNode, upsertEdge, removeNode, removeEdge, enterAddEdgeMode, exitMode, relayout, select, selectEdge, unselect, selection, node, edge, allNodes, allEdges, highlightPath, clearHighlight, isHighlighted };
 })();

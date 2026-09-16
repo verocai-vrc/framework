@@ -1,1 +1,0 @@
-Sprint 3 is committed. Before starting Sprint 4, I need to fix a semantic issue: edges anchored to Organizacao shouldn't count as cross-axis since ORG is an anchor, not a distinct axis — then I'll build the risk engine, criteria, path analysis (shortestPath and GDS Dijkstra), centrality, and the report.

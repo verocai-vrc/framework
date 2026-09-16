@@ -47,9 +47,14 @@ async def cmd_reset(client: Neo4jClient) -> int:
 
 
 async def cmd_seed(client: Neo4jClient) -> int:
-    # Filled in by Sprint 4 (fixture project that satisfies the three criteria).
-    print("seed: fixture project is not available yet (arrives in Sprint 4)", file=sys.stderr)
-    return 1
+    """Load the fictional fixture project (satisfies all three validation criteria)."""
+    from app.graph.fixture import seed_fixture
+
+    await client.ensure_schema()
+    project = await seed_fixture(client)
+    print(f"seeded project '{project.name}' ({project.node_count} nodes, "
+          f"{project.edge_count} edges) id={project.id}")  # fmt: skip
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -61,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("schema", help="apply and verify constraints/indexes")
     reset = sub.add_parser("reset", help="DELETE ALL DATA and re-apply the schema")
     reset.add_argument("--yes", action="store_true", help="confirm the wipe")
-    sub.add_parser("seed", help="load the fixture project")
+    sub.add_parser("seed", help="load the fictional fixture project (all three criteria pass)")
     args = parser.parse_args(argv)
 
     if args.command is None:

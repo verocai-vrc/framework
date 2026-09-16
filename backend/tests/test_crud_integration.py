@@ -59,7 +59,8 @@ async def test_typed_nodes_and_valid_edges_round_trip(live_client, project):
     }
     assert sorted(e["rel"] for e in graph["edges"]) == ["EXPOE", "PERTENCE_A", "RESOLVE_PARA"]
     by_rel = {e["rel"]: e for e in graph["edges"]}
-    assert by_rel["PERTENCE_A"]["cross_axis"] is True  # DIGITAL -> ORG
+    # ORG is the anchor, not a validation axis: anchoring edges never cross axes.
+    assert by_rel["PERTENCE_A"]["cross_axis"] is False
     assert by_rel["RESOLVE_PARA"]["cross_axis"] is False
     # A second read is identical: what the UI reloads is exactly what Neo4j holds.
     assert (await live_client.get(f"/api/projects/{pid}/graph")).json() == graph
@@ -137,9 +138,12 @@ async def test_update_and_delete(live_client, project):
     res = await live_client.patch(
         f"/api/edges/{edge['id']}", json={"impact": "CRITICO", "weight": 2.5}
     )
-    assert (
-        res.status_code == 200 and res.json()["impact"] == "CRITICO" and res.json()["weight"] == 2.5
-    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["impact"] == "CRITICO" and body["impact_manual"] is True and body["weight"] == 2.5
+    # Clearing the override hands the field back to the risk engine.
+    res = await live_client.patch(f"/api/edges/{edge['id']}", json={"impact_manual": False})
+    assert res.json()["impact"] is None and res.json()["impact_manual"] is False
 
     assert (await live_client.delete(f"/api/edges/{edge['id']}")).status_code == 204
     assert (await live_client.delete(f"/api/edges/{edge['id']}")).status_code == 404

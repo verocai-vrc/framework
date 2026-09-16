@@ -324,7 +324,12 @@ async def create_edge(db: Neo4jClient, project_id: str, data: EdgeCreate) -> Edg
         "updated_at": now,
     }
     if data.impact is not None:
+        # Given at creation (by hand or from a legacy file) = an analyst decision.
         props["impact"] = data.impact.value
+        props["impact_manual"] = True
+    if data.probability is not None:
+        props["probability"] = data.probability.value
+        props["probability_manual"] = True
     if data.weight is not None:
         props["weight"] = data.weight
     rec = await db.run_one(
@@ -373,6 +378,10 @@ async def update_edge(db: Neo4jClient, edge_id: str, data: EdgeUpdate) -> EdgeOu
     if data.probability_manual is False:
         set_props["probability_manual"] = False
         remove.append("probability")
+    if {"impact", "probability"} & (set(set_props) | set(remove)):
+        # The stored risk level was derived from the old pair; the next analysis run
+        # recomputes it from the new one.
+        remove.append("risk_level")
     if data.weight is not None:
         set_props["weight"] = data.weight
     remove_clause = ("REMOVE " + ", ".join(f"r.{key}" for key in remove) + " ") if remove else ""

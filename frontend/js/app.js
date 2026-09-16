@@ -68,7 +68,17 @@
     $("graph-empty").firstElementChild.textContent = t("graph.empty");
     Graph.load(graph);
     window.Collectors.render();
+    window.Analysis.reset();
     await window.Collectors.refreshCount();
+  }
+
+  // ---- tools panel tabs -----------------------------------------------------------
+  function showTab(name) {
+    $("tools-body").hidden = name !== "collectors";
+    $("analysis-body").hidden = name !== "analysis";
+    $("tools-tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
+    try { localStorage.setItem("osintree.tab", name); } catch (_) { /* ignore */ }
+    if (name === "analysis") window.Analysis.render();
   }
 
   function openNewProject(required = false) {
@@ -348,10 +358,14 @@
     $("btn-import").onclick = () => $("input-import").click();
     $("input-import").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) importFile(f); };
     $("project-select").onchange = (e) => switchProject(e.target.value).catch(showError);
+    $("tools-tabs").querySelectorAll("button").forEach((b) => { b.onclick = () => showTab(b.dataset.tab); });
+    let tab = "collectors";
+    try { tab = localStorage.getItem("osintree.tab") || "collectors"; } catch (_) { /* ignore */ }
+    showTab(tab);
     document.addEventListener("keydown", (e) => {
       if (window.Modals.isOpen() || ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
       if (e.key === "Delete" || e.key === "Backspace") deleteSelection();
-      if (e.key === "Escape") Graph.exitMode();
+      if (e.key === "Escape") { Graph.exitMode(); if (Graph.isHighlighted()) window.Analysis.clearHighlight(); }
     });
     try {
       await Schema.load();
@@ -361,7 +375,7 @@
   }
 
   // Public surface for keyboard shortcuts, other modules and UI automation.
-  window.App = { state, openAddNode, openAddEdge, openNewProject, openProjectSettings, deleteSelection, switchProject, loadProjects, exportProject, importFile, showNode, showEdge, clearEditor, toast };
+  window.App = { state, openAddNode, openAddEdge, openNewProject, openProjectSettings, deleteSelection, switchProject, loadProjects, exportProject, importFile, showNode, showEdge, clearEditor, showTab, toast };
 
   document.addEventListener("DOMContentLoaded", boot);
 })();

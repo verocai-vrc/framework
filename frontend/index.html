@@ -51,7 +51,10 @@
 
     <section class="panel tools-panel">
       <div class="tools-head">
-        <h2 data-i18n="tools.title">Tools &amp; collectors</h2>
+        <div class="seg seg-tabs" id="tools-tabs">
+          <button data-tab="collectors" class="on" data-i18n="tools.tab_collectors">Collectors</button>
+          <button data-tab="analysis" data-i18n="tools.tab_analysis">Analysis</button>
+        </div>
         <div class="io-actions">
           <button id="btn-review" class="btn-sm btn-review" data-i18n="review.button0">Review queue</button>
           <button id="btn-export" class="btn-sm" data-i18n="io.export">↓ Export JSON</button>
@@ -59,9 +62,8 @@
           <input type="file" id="input-import" accept=".json,application/json" hidden>
         </div>
       </div>
-      <div id="tools-body">
-        <p class="muted" data-i18n="tools.empty">Collectors arrive in Sprint 3.</p>
-      </div>
+      <div id="tools-body"></div>
+      <div id="analysis-body" hidden></div>
     </section>
   </div>
 
@@ -92,6 +94,7 @@
 <script src="js/editor.js"></script>
 <script src="js/collectors.js"></script>
 <script src="js/review.js"></script>
+<script src="js/analysis.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

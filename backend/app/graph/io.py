@@ -166,6 +166,12 @@ async def import_typed(
         }
         if e.impact:
             edge_props["impact"] = e.impact.value
+            edge_props["impact_manual"] = e.impact_manual
+        if e.probability:
+            edge_props["probability"] = e.probability.value
+            edge_props["probability_manual"] = e.probability_manual
+        if e.risk_level:
+            edge_props["risk_level"] = e.risk_level.value
         if e.weight is not None:
             edge_props["weight"] = e.weight
         await db.run(
