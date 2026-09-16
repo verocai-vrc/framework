@@ -15,6 +15,7 @@ from app.db.driver import Neo4jClient
 from app.db.schema import (
     ENTITY_LABEL,
     LABEL_SPECS,
+    VALIDATION_AXES,
     Axis,
     Layer,
     NodeLabel,
@@ -100,8 +101,11 @@ def node_props(project_id: str, data: NodeCreate) -> dict[str, Any]:
 
 
 def cross_axis(a_axis: Axis, a_layer: Layer | None, b_axis: Axis, b_layer: Layer | None) -> bool:
-    """True when the endpoints sit in different axes, or in different IT/OT layers of the
-    DIGITAL axis (Tabela 8 treats TI -> TO as a crossing)."""
+    """True when the endpoints sit in two distinct *validation* axes, or in different IT/OT
+    layers of the DIGITAL axis (Tabela 8 treats TI -> TO as a crossing). ``ORG`` is the
+    anchor, not an axis, so anchoring edges never count."""
+    if a_axis not in VALIDATION_AXES or b_axis not in VALIDATION_AXES:
+        return False
     if a_axis != b_axis:
         return True
     return (
@@ -134,6 +138,10 @@ def edge_to_out(
         cross_axis=cross_axis(a_out.axis, a_out.layer, b_out.axis, b_out.layer),
         notes=props.get("notes", ""),
         impact=Impact(props["impact"]) if props.get("impact") else None,
+        impact_manual=bool(props.get("impact_manual", False)),
+        probability=props.get("probability"),
+        probability_manual=bool(props.get("probability_manual", False)),
+        risk_level=props.get("risk_level"),
         weight=props.get("weight"),
         source=props.get("source", "manual"),
         collected_at=props.get("collected_at", ""),
@@ -349,14 +357,28 @@ async def list_edges(db: Neo4jClient, project_id: str) -> list[EdgeOut]:
 
 async def update_edge(db: Neo4jClient, edge_id: str, data: EdgeUpdate) -> EdgeOut:
     set_props: dict[str, Any] = {"updated_at": utcnow_iso()}
+    remove: list[str] = []
     if data.notes is not None:
         set_props["notes"] = data.notes
     if data.impact is not None:
+        # An explicit value is an analyst override; the risk engine will not replace it.
         set_props["impact"] = data.impact.value
+        set_props["impact_manual"] = True
+    if data.impact_manual is False:
+        set_props["impact_manual"] = False
+        remove.append("impact")
+    if data.probability is not None:
+        set_props["probability"] = data.probability.value
+        set_props["probability_manual"] = True
+    if data.probability_manual is False:
+        set_props["probability_manual"] = False
+        remove.append("probability")
     if data.weight is not None:
         set_props["weight"] = data.weight
+    remove_clause = ("REMOVE " + ", ".join(f"r.{key}" for key in remove) + " ") if remove else ""
     rec = await db.run_one(
-        f"{_MATCH_EDGE_BY_ID} SET r += $props {_RETURN_EDGE}", {"id": edge_id, "props": set_props}
+        f"{_MATCH_EDGE_BY_ID} SET r += $props {remove_clause}{_RETURN_EDGE}",
+        {"id": edge_id, "props": set_props},
     )
     if rec is None:
         raise NotFound("edge not found", id=edge_id)
