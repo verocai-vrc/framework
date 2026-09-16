@@ -117,6 +117,23 @@ opens the UI in your default browser instead of a window.
 | `make seed`    | Load the fixture project (from Sprint 4)                            |
 | `make reset`   | **Wipe the database** and re-apply the schema                       |
 
+## Collectors (all passive, all keyless)
+
+| Collector | Thesis source family | Input | Produces |
+|-----------|----------------------|-------|----------|
+| `crtsh`   | CT logs              | seed domain (or a selected `Dominio`) | `Dominio` candidates anchored to the `Organizacao` |
+| `rdap`    | RDAP/WHOIS           | selected `Endereco_IP`, or an IP/ASN | enrichment of the address; `Fornecedor` (registrant) with `MANTEM_ACESSO_A` |
+| `bgp`     | ASN/BGP (RIPEstat)   | selected `Endereco_IP`, or an IP/ASN | enrichment (origin ASN); `Fornecedor` (ASN holder) with `MANTEM_ACESSO_A` |
+| `nvd`     | NVD/CVE              | selected `Software` | `CVE` candidates with `POSSUI_VULNERABILIDADE` |
+
+Results never enter the graph directly: they land in the **review queue**, where each
+candidate is approved (merged with `reviewed = true` and `source = <collector>`), edited
+first, or rejected. Responses are cached on disk for 24 h under `.cache/collectors/` and
+requests are rate-limited per host (NVD: one request every 6 s, the unauthenticated limit).
+
+`active_probe_example` is a stub that declares `interacts_with_target = True` and performs
+no network action; it exists to demonstrate the guard refusing it.
+
 ## Configuration
 
 All settings come from `.env` (see `.env.example`). The important one:
@@ -136,7 +153,7 @@ Built sprint by sprint from `project-brief.md`:
 - [x] Sprint 0 — foundations: Neo4j, health-checked API, schema, UI shell
 - [x] Sprint 1 — typed graph core and manual CRUD
 - [x] Sprint 2 — editor, notes, projects, import/export
-- [ ] Sprint 3 — passive collectors with review gate
+- [x] Sprint 3 — passive collectors with review gate
 - [ ] Sprint 4 — correlation and risk analysis, report
 - [ ] Sprint 5 — polish, packaging, docs
 

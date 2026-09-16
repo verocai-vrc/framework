@@ -67,6 +67,8 @@
     const graph = await API.get(`/api/projects/${id}/graph`);
     $("graph-empty").firstElementChild.textContent = t("graph.empty");
     Graph.load(graph);
+    window.Collectors.render();
+    await window.Collectors.refreshCount();
   }
 
   function openNewProject(required = false) {
@@ -224,9 +226,9 @@
   }
 
   // ---- editor (js/editor.js) ------------------------------------------------------
-  const clearEditor = () => window.Editor.clear();
-  const showNode = (n) => window.Editor.showNode(n);
-  const showEdge = (e) => window.Editor.showEdge(e);
+  const clearEditor = () => { window.Editor.clear(); window.Collectors.setSelected(null); };
+  const showNode = (n) => { window.Editor.showNode(n); window.Collectors.setSelected(n); };
+  const showEdge = (e) => { window.Editor.showEdge(e); window.Collectors.setSelected(null); };
 
   // ---- project settings -----------------------------------------------------------
   function openProjectSettings() {
@@ -342,6 +344,7 @@
     $("btn-new-project").onclick = () => openNewProject(false);
     $("btn-project-settings").onclick = openProjectSettings;
     $("btn-export").onclick = exportProject;
+    $("btn-review").onclick = () => window.Review.open();
     $("btn-import").onclick = () => $("input-import").click();
     $("input-import").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) importFile(f); };
     $("project-select").onchange = (e) => switchProject(e.target.value).catch(showError);
@@ -352,6 +355,7 @@
     });
     try {
       await Schema.load();
+      await window.Collectors.load();
       await loadProjects();
     } catch (err) { showError(err); }
   }

@@ -9,13 +9,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import ValidationError
 
 from app import __version__
+from app.collectors.registry import make_http
 from app.config import FRONTEND_DIR, get_settings
 from app.db.driver import Neo4jClient, Neo4jUnavailable
 from app.errors import DomainError
 from app.i18n import t
-from app.routers import edges, health, io, nodes, projects, schema
+from app.routers import collectors, edges, health, io, nodes, projects, review, schema
 
 log = logging.getLogger("app")
 
@@ -27,6 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     client = Neo4jClient(settings)
     await client.connect()
     app.state.db = client
+    app.state.http = make_http(settings)
     if await client.ensure_schema():
         log.info("connected to neo4j at %s", settings.neo4j_uri)
     else:
@@ -35,6 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await app.state.http.aclose()
         await client.close()
 
 
@@ -48,6 +52,8 @@ def create_app() -> FastAPI:
     app.include_router(nodes.router)
     app.include_router(edges.router)
     app.include_router(io.router)
+    app.include_router(collectors.router)
+    app.include_router(review.router)
 
     @app.exception_handler(DomainError)
     async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
@@ -60,6 +66,18 @@ def create_app() -> FastAPI:
                 "message": exc.message,
                 **exc.extra,
             },
+        )
+
+    @app.exception_handler(ValidationError)
+    async def _validation_error(_: Request, exc: ValidationError) -> JSONResponse:
+        errors = [
+            {"loc": list(e.get("loc", ())), "msg": e.get("msg", "")}
+            for e in exc.errors(include_url=False)
+        ]
+        detail = "; ".join(f"{'.'.join(map(str, e['loc'])) or 'value'}: {e['msg']}" for e in errors)
+        return JSONResponse(
+            status_code=422,
+            content={"detail": detail, "code": "error.validation", "errors": errors},
         )
 
     @app.exception_handler(Neo4jUnavailable)

@@ -1,0 +1,123 @@
+[
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "www.iana.org",
+  "name_value": "www.iana.org",
+  "id": 29106199741,
+  "not_before": "2026-08-21T20:51:32",
+  "not_after": "2026-11-19T21:51:30",
+  "serial_number": "00c11d1e32e2a7625313c0ae9fcaa3f681",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 432477,
+  "issuer_name": "C=US, O=Let's Encrypt, CN=YR2",
+  "common_name": "handbook.int.iana.org",
+  "name_value": "handbook.int.iana.org",
+  "id": 28413046108,
+  "not_before": "2026-07-31T15:48:18",
+  "not_after": "2026-10-29T15:48:17",
+  "serial_number": "06150aed8772cf3a3fe9076d48bda0e0bd72",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "data.iana.org",
+  "name_value": "data.iana.org",
+  "id": 28297624778,
+  "not_before": "2026-07-27T16:32:23",
+  "not_after": "2026-10-25T17:32:19",
+  "serial_number": "179e9c68fafd738c136269edd2b95fcb",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "sle-dashboard.iana.org",
+  "name_value": "sle-dashboard.iana.org",
+  "id": 27793150020,
+  "not_before": "2026-07-08T23:02:55",
+  "not_after": "2026-10-07T00:02:53",
+  "serial_number": "2923adbcf0d0640c0e816a1a99aa533b",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "pen.iana.org",
+  "name_value": "pen.iana.org",
+  "id": 27793082637,
+  "not_before": "2026-07-08T23:01:07",
+  "not_after": "2026-10-07T00:01:05",
+  "serial_number": "2c8f502379f45ea013bf82458a5df0f6",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 432952,
+  "issuer_name": "C=US, O=Let's Encrypt, CN=YE1",
+  "common_name": "ftp.iana.org",
+  "name_value": "ftp.iana.org\npen.iana.org\nsle-dashboard.iana.org",
+  "id": 27740239630,
+  "not_before": "2026-07-06T18:56:41",
+  "not_after": "2026-10-04T18:56:40",
+  "serial_number": "0556109b207f2d3d11ad6cbb49dca88e568f",
+  "result_count": 4
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "www-cdn.iana.org",
+  "name_value": "www-cdn.iana.org",
+  "id": 27301995198,
+  "not_before": "2026-06-18T21:13:56",
+  "not_after": "2026-09-16T22:13:53",
+  "serial_number": "00da96f96b890e8c2b0e027ccd4d2313d9",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "data2.iana.org",
+  "name_value": "data2.iana.org",
+  "id": 26720988741,
+  "not_before": "2026-05-29T01:13:58",
+  "not_after": "2026-08-27T02:13:51",
+  "serial_number": "0096a9ccc5eec307d90ed05f64b0912263",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
+  "common_name": "*.iana.org",
+  "name_value": "*.iana.org\niana.org",
+  "id": 1,
+  "not_before": "2020-01-01T00:00:00",
+  "not_after": "2021-01-01T00:00:00",
+  "serial_number": "00c11d1e32e2a7625313c0ae9fcaa3f681",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "unrelated.example.net",
+  "name_value": "unrelated.example.net",
+  "id": 2,
+  "not_before": "2026-08-21T20:51:32",
+  "not_after": "2026-11-19T21:51:30",
+  "serial_number": "00c11d1e32e2a7625313c0ae9fcaa3f681",
+  "result_count": 2
+ },
+ {
+  "issuer_ca_id": 286236,
+  "issuer_name": "C=US, O=Google Trust Services, CN=WE1",
+  "common_name": "WWW.IANA.ORG",
+  "name_value": "WWW.IANA.ORG",
+  "id": 3,
+  "not_before": "2019-05-05T00:00:00",
+  "not_after": "2019-08-05T00:00:00",
+  "serial_number": "00c11d1e32e2a7625313c0ae9fcaa3f681",
+  "result_count": 2
+ }
+]

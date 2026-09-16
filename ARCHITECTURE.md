@@ -63,7 +63,13 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `app/graph/crud.py`    | Node/edge CRUD; refuses disallowed `(source, rel, target)` triples with a hint; stamps provenance; computes `cross_axis`. |
 | `app/graph/projects.py`| Project CRUD; creating a project with `org_name` creates its `Organizacao` anchor. |
 | `app/graph/io.py`      | Export (`osintree/1`, lossless incl. ids/provenance) and import: typed files (ids kept unless they collide) and the reference tool's legacy `{meta, nodes, edges}` format (best-effort, warnings, anchoring edges, unknown types become re-typable defaults). |
-| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges`, `io` (all under `/api`). |
+| `app/collectors/base.py` | `Collector` interface (`name`, `interacts_with_target`, `axis`, `input_kind`, `source_family`), `Finding`/`FindingEdge`, `RunContext`, guard error. |
+| `app/collectors/http.py` | Shared `httpx` client: timeouts, per-host rate limiting, retry/backoff, 24 h on-disk cache. |
+| `app/collectors/{crtsh,rdap,bgp,nvd}.py` | Built-in passive collectors; each docstring names its thesis source family. |
+| `app/collectors/active_example.py` | Stub with `interacts_with_target = True`; refused by the guard, never contacts anything. |
+| `app/collectors/registry.py` | Discovery, **passive guard** (`check_passive_guard`, applied before seed resolution), seed resolution from a node or a string, run pipeline collect → stage. |
+| `app/review/staging.py` | `:Candidate` store (never `:Entity`); dedupe against pending/approved/in-graph; edit; **merge-on-approve** (`reviewed = true`, `source = collector`); reject; purge. |
+| `app/routers/*.py`     | `schema`, `projects`, `nodes`, `edges`, `io`, `collectors`, `review` (all under `/api`). |
 
 ## Data model conventions
 
@@ -82,11 +88,28 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `js/schema.js` | Loads `/api/schema`; display names, axis colours, shapes, `allowedRels(src, dst)`. |
 | `js/modals.js` | Modal host, confirm dialog, schema-driven form inputs. |
 | `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook. |
+| `js/collectors.js` | Tools panel: run collectors on the seed or the selected node; blocked collectors shown locked; review badge. Manual OSINT tool reference list (links only). |
+| `js/review.js` | Review queue modal: pending/approved/rejected tabs, inline edit, approve/reject (single and bulk), purge. |
 | `js/editor.js` | Entity editor: title, typed attributes, layer, description, Markdown notes (marked preview), metadata, neighbours, provenance; debounced autosave; re-type dialog; edge editor (impact override, weight, notes). |
 | `js/app.js`    | Glue: projects, toolbar, node/edge dialogs, selection → editor. Exposes `window.App`. |
 
 Node property storage: attribute models are flattened onto the Neo4j node (so `Dominio.name`,
 `Endereco_IP.address`, `CVE.cve_id` indexes apply); `metadata` is stored as `metadata_json`.
+
+## Collection and review flow
+
+```
+seed / selected node ─▶ registry.run ─▶ passive guard ─▶ collector.collect ─▶ Finding[]
+                                                                        │
+                                            :Candidate (pending) ◀── staging.stage (dedupe)
+                                                    │
+                    analyst: edit ─▶ approve ─▶ staging.approve ─▶ crud.create_node / update_node + edges
+                                     reject  ─▶ status = rejected (kept for audit, purgeable)
+```
+
+A finding is either a new node, an enrichment (`node_update`: fills empty attributes, merges
+metadata, appends notes) or a link (`edge`), plus edges to nodes that already exist in the
+graph. Merge stamps `source = <collector>`, the run's `collected_at`, and `reviewed = true`.
 
 ## Import / export
 

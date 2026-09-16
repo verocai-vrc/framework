@@ -16,6 +16,7 @@ window.Modals = (() => {
   function close() {
     overlay().hidden = true;
     box().innerHTML = "";
+    box().classList.remove("modal-wide");
     if (onClose) { const fn = onClose; onClose = null; fn(); }
   }
   function isOpen() { return !overlay().hidden; }

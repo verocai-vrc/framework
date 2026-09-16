@@ -1,0 +1,196 @@
+{
+  "endAutnum" : 16876,
+  "entities" : [ {
+    "entities" : [ {
+      "events" : [ {
+        "eventAction" : "last changed",
+        "eventDate" : "2025-08-11T12:55:39-04:00"
+      }, {
+        "eventAction" : "registration",
+        "eventDate" : "2023-03-09T20:36:55-05:00"
+      } ],
+      "handle" : "CORZO1-ARIN",
+      "links" : [ {
+        "href" : "https://rdap.arin.net/registry/entity/CORZO1-ARIN",
+        "rel" : "self",
+        "type" : "application/rdap+json",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      }, {
+        "href" : "https://whois.arin.net/rest/poc/CORZO1-ARIN",
+        "rel" : "alternate",
+        "type" : "application/xml",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      } ],
+      "objectClassName" : "entity",
+      "port43" : "whois.arin.net",
+      "roles" : [ "technical" ],
+      "status" : [ "validated" ],
+      "vcardArray" : [ "vcard", [ [ "version", { }, "text", "4.0" ], [ "adr", {
+        "label" : "12025 Waterfront Dr\nLos Angeles\nCA\n90094\nUnited States"
+      }, "text", [ "", "", "", "", "", "", "" ] ], [ "fn", { }, "text", "Eduardo Corzo" ], [ "n", { }, "text", [ "Corzo", "Eduardo", "", "", "" ] ], [ "kind", { }, "text", "individual" ], [ "email", { }, "text", "eduardo.corzo@icann.org" ], [ "tel", {
+        "type" : [ "work", "voice" ]
+      }, "text", "+1-310-301-5800" ], [ "tel", {
+        "type" : [ "work", "cell" ]
+      }, "text", "+1-310-383-0976" ] ] ]
+    }, {
+      "events" : [ {
+        "eventAction" : "last changed",
+        "eventDate" : "2024-08-06T10:52:25-04:00"
+      }, {
+        "eventAction" : "registration",
+        "eventDate" : "2020-09-21T13:36:50-04:00"
+      } ],
+      "handle" : "ICANN-ARIN",
+      "links" : [ {
+        "href" : "https://rdap.arin.net/registry/entity/ICANN-ARIN",
+        "rel" : "self",
+        "type" : "application/rdap+json",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      }, {
+        "href" : "https://whois.arin.net/rest/poc/ICANN-ARIN",
+        "rel" : "alternate",
+        "type" : "application/xml",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      } ],
+      "objectClassName" : "entity",
+      "port43" : "whois.arin.net",
+      "roles" : [ "dns" ],
+      "status" : [ "validated" ],
+      "vcardArray" : [ "vcard", [ [ "version", { }, "text", "4.0" ], [ "adr", {
+        "label" : "12025 Waterfront Drive,\nSuite 300\nLos Angeles\nCA\n90094\nUnited States"
+      }, "text", [ "", "", "", "", "", "", "" ] ], [ "fn", { }, "text", "ICANN DNS" ], [ "org", { }, "text", "ICANN" ], [ "kind", { }, "text", "group" ], [ "email", { }, "text", "noc@dns.icann.org" ], [ "tel", {
+        "type" : [ "work", "voice" ]
+      }, "text", "+1-424-217-1313" ] ] ]
+    }, {
+      "events" : [ {
+        "eventAction" : "last changed",
+        "eventDate" : "2025-10-16T13:50:11-04:00"
+      }, {
+        "eventAction" : "registration",
+        "eventDate" : "2001-06-26T16:55:06-04:00"
+      } ],
+      "handle" : "ICANN-NET",
+      "links" : [ {
+        "href" : "https://rdap.arin.net/registry/entity/ICANN-NET",
+        "rel" : "self",
+        "type" : "application/rdap+json",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      }, {
+        "href" : "https://whois.arin.net/rest/poc/ICANN-NET",
+        "rel" : "alternate",
+        "type" : "application/xml",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      } ],
+      "objectClassName" : "entity",
+      "port43" : "whois.arin.net",
+      "roles" : [ "abuse" ],
+      "status" : [ "validated" ],
+      "vcardArray" : [ "vcard", [ [ "version", { }, "text", "4.0" ], [ "adr", {
+        "label" : "12025 Waterfront Dr.\r\nSuite 300\nLos Angeles\nCA\n90094\nUnited States"
+      }, "text", [ "", "", "", "", "", "", "" ] ], [ "fn", { }, "text", "Internet Corporation for Assigned Names and Number" ], [ "org", { }, "text", "ICANN" ], [ "kind", { }, "text", "group" ], [ "email", { }, "text", "ops@icann.org" ], [ "tel", {
+        "type" : [ "work", "voice" ]
+      }, "text", "+1-310-301-3889" ] ] ]
+    }, {
+      "events" : [ {
+        "eventAction" : "last changed",
+        "eventDate" : "2025-10-16T13:49:43-04:00"
+      }, {
+        "eventAction" : "registration",
+        "eventDate" : "2018-04-04T14:47:23-04:00"
+      } ],
+      "handle" : "JENKI373-ARIN",
+      "links" : [ {
+        "href" : "https://rdap.arin.net/registry/entity/JENKI373-ARIN",
+        "rel" : "self",
+        "type" : "application/rdap+json",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      }, {
+        "href" : "https://whois.arin.net/rest/poc/JENKI373-ARIN",
+        "rel" : "alternate",
+        "type" : "application/xml",
+        "value" : "https://rdap.arin.net/registry/autnum/16876"
+      } ],
+      "objectClassName" : "entity",
+      "port43" : "whois.arin.net",
+      "roles" : [ "technical", "administrative" ],
+      "status" : [ "validated" ],
+      "vcardArray" : [ "vcard", [ [ "version", { }, "text", "4.0" ], [ "adr", {
+        "label" : "12025 Waterfront Dr\nSuite 300\nLos Angeles\nCA\n90094\nUnited States"
+      }, "text", [ "", "", "", "", "", "", "" ] ], [ "fn", { }, "text", "Josh Jenkins" ], [ "n", { }, "text", [ "Jenkins", "Josh", "", "", "" ] ], [ "kind", { }, "text", "individual" ], [ "email", { }, "text", "josh.jenkins@icann.org" ], [ "tel", {
+        "type" : [ "work", "voice" ]
+      }, "text", "+1-310-578-8699" ] ] ]
+    } ],
+    "events" : [ {
+      "eventAction" : "last changed",
+      "eventDate" : "2024-05-31T12:05:16-04:00"
+    }, {
+      "eventAction" : "registration",
+      "eventDate" : "2001-03-30T00:00:00-05:00"
+    } ],
+    "handle" : "ICANN",
+    "links" : [ {
+      "href" : "https://rdap.arin.net/registry/entity/ICANN",
+      "rel" : "self",
+      "type" : "application/rdap+json",
+      "value" : "https://rdap.arin.net/registry/autnum/16876"
+    }, {
+      "href" : "https://whois.arin.net/rest/org/ICANN",
+      "rel" : "alternate",
+      "type" : "application/xml",
+      "value" : "https://rdap.arin.net/registry/autnum/16876"
+    } ],
+    "objectClassName" : "entity",
+    "port43" : "whois.arin.net",
+    "roles" : [ "registrant" ],
+    "vcardArray" : [ "vcard", [ [ "version", { }, "text", "4.0" ], [ "fn", { }, "text", "ICANN" ], [ "adr", {
+      "label" : "12025 Waterfront Dr.\r\nSuite 300\nLos Angeles\nCA\n90094\nUnited States"
+    }, "text", [ "", "", "", "", "", "", "" ] ], [ "kind", { }, "text", "org" ] ] ]
+  } ],
+  "events" : [ {
+    "eventAction" : "last changed",
+    "eventDate" : "2016-01-11T09:03:49-05:00"
+  }, {
+    "eventAction" : "registration",
+    "eventDate" : "2009-06-22T16:21:02-04:00"
+  } ],
+  "handle" : "AS16876",
+  "links" : [ {
+    "href" : "https://rdap.arin.net/registry/autnum/16876",
+    "rel" : "self",
+    "type" : "application/rdap+json",
+    "value" : "https://rdap.arin.net/registry/autnum/16876"
+  }, {
+    "href" : "https://whois.arin.net/rest/asn/AS16876",
+    "rel" : "alternate",
+    "type" : "application/xml",
+    "value" : "https://rdap.arin.net/registry/autnum/16876"
+  } ],
+  "name" : "ICANN-DC",
+  "notices" : [ {
+    "description" : [ "By using the ARIN RDAP/Whois service, you are agreeing to the RDAP/Whois Terms of Use" ],
+    "links" : [ {
+      "href" : "https://www.arin.net/resources/registry/whois/tou/",
+      "rel" : "terms-of-service",
+      "type" : "text/html",
+      "value" : "https://rdap.arin.net/registry/autnum/16876"
+    } ],
+    "title" : "Terms of Service"
+  }, {
+    "description" : [ "If you see inaccuracies in the results, please visit: " ],
+    "links" : [ {
+      "href" : "https://www.arin.net/resources/registry/whois/inaccuracy_reporting/",
+      "rel" : "inaccuracy-report",
+      "type" : "text/html",
+      "value" : "https://rdap.arin.net/registry/autnum/16876"
+    } ],
+    "title" : "Whois Inaccuracy Reporting"
+  }, {
+    "description" : [ "Copyright 1997-2026, American Registry for Internet Numbers, Ltd." ],
+    "title" : "Copyright Notice"
+  } ],
+  "objectClassName" : "autnum",
+  "port43" : "whois.arin.net",
+  "rdapConformance" : [ "nro_rdap_profile_0", "rdap_level_0", "nro_rdap_profile_asn_flat_0" ],
+  "startAutnum" : 16876,
+  "status" : [ "active" ]
+}

@@ -38,6 +38,8 @@ class Neo4jClient:
             s.neo4j_uri,
             auth=(s.neo4j_user, s.neo4j_password),
             connection_timeout=s.neo4j_connect_timeout,
+            # "index already exists" notes from idempotent schema statements are not news.
+            notifications_min_severity="WARNING",
         )
 
     async def close(self) -> None:

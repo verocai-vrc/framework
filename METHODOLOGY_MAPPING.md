@@ -11,7 +11,10 @@
 | Criterion 1 — ≥ 3 of 4 axes | `app/analysis/criteria.py` (Sprint 4) |
 | Criterion 2 — seed → OT path | `app/analysis/paths.py` (Sprint 4) |
 | Criterion 3 — ≥ 1 CRITICO/ALTO cross-axis edge | `app/analysis/risk.py` (Sprint 4) |
-| Passive vs active collection (Section 2.1) | `app/config.py` `PASSIVE_ONLY`; `app/collectors/base.py` guard (Sprint 3) |
+| Passive vs active collection (Section 2.1) | `app/config.py` `PASSIVE_ONLY`; `Collector.interacts_with_target`; `app/collectors/registry.py::check_passive_guard` runs before any collector; `active_example.py` demonstrates the refusal |
+| Human-in-the-loop review | `app/review/staging.py`: collectors write `:Candidate` only; `approve()` is the sole path into the live graph |
+| Provenance (`source`, `collected_at`, `reviewed`) | `app/models/common.py::Provenance`; manual = `manual/true`; collector merges = `<collector>/true`; candidates carry the run timestamp |
+| Source families: CT logs, RDAP/WHOIS, ASN, NVD/CVE | `crtsh.py`, `rdap.py`, `bgp.py`, `nvd.py` (`source_family` attribute and module docstrings) |
 
 ## Extensions beyond the thesis schema
 

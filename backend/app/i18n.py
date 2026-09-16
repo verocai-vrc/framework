@@ -26,6 +26,11 @@ _STRINGS: dict[str, dict[str, str]] = {
         "error.invalid_edge.allowed": "Allowed here: {allowed}.",
         "error.invalid_edge.reverse": "The opposite direction allows: {reverse_allowed}.",
         "error.invalid_edge.none": "No relationship type connects these two labels.",
+        "error.passive_guard": (
+            "Collector '{collector}' would interact with the target and PASSIVE_ONLY is on. "
+            "Refused."
+        ),
+        "error.collector_input": "This collector cannot run with that input.",
     },
     "pt": {
         "health.ok": "ok",
@@ -41,6 +46,10 @@ _STRINGS: dict[str, dict[str, str]] = {
         "error.invalid_edge.allowed": "Permitido aqui: {allowed}.",
         "error.invalid_edge.reverse": "A direção oposta permite: {reverse_allowed}.",
         "error.invalid_edge.none": "Nenhum tipo de relação conecta esses dois rótulos.",
+        "error.passive_guard": (
+            "O coletor '{collector}' interagiria com o alvo e PASSIVE_ONLY está ativo. Recusado."
+        ),
+        "error.collector_input": "Este coletor não pode rodar com essa entrada.",
     },
 }
 
