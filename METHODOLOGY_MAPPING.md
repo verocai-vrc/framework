@@ -16,6 +16,18 @@
 | Provenance (`source`, `collected_at`, `reviewed`) | `app/models/common.py::Provenance`; manual = `manual/true`; collector merges = `<collector>/true`; candidates carry the run timestamp |
 | Source families: CT logs, RDAP/WHOIS, ASN, NVD/CVE | `crtsh.py`, `rdap.py`, `bgp.py`, `nvd.py` (`source_family` attribute and module docstrings) |
 
+### Where each mapping is verified
+
+| Thesis element | Test |
+|----------------|------|
+| Tabela 7 / relationship list / edge validity | `backend/tests/test_schema.py`, `test_models.py`, `test_crud_integration.py` |
+| Tabela 8 rows and preconditions | `test_analysis_unit.py::test_every_tabela8_row_is_present`, `test_t81_…`, `test_t82_…`, `test_t83_to_t86` |
+| Tabela 2 | `test_analysis_unit.py::test_risk_matrix_is_the_agreed_3x3` |
+| Criteria 1–3 on an engineered fixture | `test_analysis_integration.py::test_fixture_meets_all_three_criteria`, `test_smoke_e2e.py` |
+| Passive guard | `test_review_integration.py::test_active_collector_is_refused_by_guard_before_running`, `test_smoke_e2e.py` (step 1) |
+| Review gate and provenance | `test_review_integration.py::test_crtsh_stages_candidates_and_merge_on_approve`, `test_smoke_e2e.py` (step 2) |
+| Reproducibility of the report | `test_analysis_integration.py::test_report_renders_in_three_formats`, `test_analysis_unit.py::test_report_renders_three_formats_in_both_locales` |
+
 ## Interpretation choices in the analysis engine
 
 These are decisions the thesis text leaves open; each is a one-line change if the

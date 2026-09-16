@@ -17,7 +17,7 @@ else
   RUN := $(UV) run
 endif
 
-.PHONY: help install up down status app dev test test-unit test-int lint fmt schema seed reset vendor
+.PHONY: help install up down status app dev test test-unit test-int test-e2e lint fmt check schema seed reset vendor requirements
 
 help:
 	@echo "make install   install Python dependencies (uv sync, or pip into .venv)"
@@ -27,8 +27,12 @@ help:
 	@echo "make app       open the desktop app (native window, engine in-process)"
 	@echo "make dev       developer mode: engine only with auto-reload on http://$(HOST):$(PORT)"
 	@echo "make test      run the whole test suite (integration tests skip without Neo4j)"
+	@echo "make test-unit only the unit tests (no Neo4j, no network)"
+	@echo "make test-e2e  only the end-to-end smoke test (needs Neo4j)"
+	@echo "make check     lint + full test suite (what CI runs)"
 	@echo "make lint      ruff check + format check"
 	@echo "make fmt       ruff format"
+	@echo "make requirements  regenerate requirements*.txt from uv.lock (pip users)"
 	@echo "make schema    apply/verify Neo4j constraints and indexes"
 	@echo "make seed      load the fixture project (Sprint 4)"
 	@echo "make reset     WIPE the database and re-apply the schema"
@@ -38,7 +42,8 @@ help:
 # gir1.2-webkit2-4.1) for the native window. Without them, install the `qt` extra instead.
 install:
 ifeq ($(RUN),)
-	python3 -m venv --system-site-packages .venv && .venv/bin/pip install -e ".[dev]"
+	python3 -m venv --system-site-packages .venv \
+	  && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pip install --no-deps -e .
 else
 	$(UV) venv --system-site-packages --allow-existing && $(UV) sync --extra dev
 endif
@@ -78,6 +83,16 @@ test-unit:
 
 test-int:
 	$(RUN) pytest -q -m neo4j
+
+test-e2e:
+	$(RUN) pytest -q backend/tests/test_smoke_e2e.py
+
+check: lint test
+
+# Pinned, hash-free exports of uv.lock so `pip install -r` reproduces the same versions.
+requirements:
+	$(UV) export --frozen --no-dev --no-emit-project --no-hashes -o requirements.txt
+	$(UV) export --frozen --no-emit-project --no-hashes -o requirements-dev.txt
 
 lint:
 	$(RUN) ruff check . && $(RUN) ruff format --check .

@@ -21,6 +21,10 @@
     <button id="btn-project-settings" class="btn-sm btn-icon" data-i18n-title="project.settings" title="Project settings">⚙</button>
   </div>
   <div class="topbar-right">
+    <select id="locale-select" class="select-compact select-locale" data-i18n-title="locale.tip" title="Interface language">
+      <option value="en">EN</option>
+      <option value="pt">PT</option>
+    </select>
     <span class="badge badge-guard" id="badge-passive" data-i18n-title="guard.tooltip">
       <span data-i18n="guard.passive">passive-only</span>
     </span>
@@ -41,8 +45,13 @@
         <button id="btn-add-node" data-i18n="graph.add_node">＋ Node</button>
         <button id="btn-add-edge" data-i18n="graph.add_edge">→ Edge</button>
         <button id="btn-delete" data-i18n="graph.delete" disabled>🗑 Delete</button>
-        <button id="btn-layout" data-i18n="graph.layout">⟳ Layout</button>
+        <button id="btn-layout" data-i18n="graph.layout" data-i18n-title="graph.layout_tip" title="Re-run the layout (double-click the canvas to fit)">⟳ Layout</button>
+        <button id="btn-cluster" data-i18n="graph.cluster" data-i18n-title="graph.cluster_tip" title="Collapse each axis into one node; click a cluster to open it">⊞ Axes</button>
       </div>
+      <details class="legend" id="legend" open>
+        <summary data-i18n="legend.title">Legend</summary>
+        <div id="legend-body"></div>
+      </details>
       <div class="mode-hint" id="mode-hint" hidden></div>
       <div class="empty-state" id="graph-empty">
         <p data-i18n="graph.empty">No graph yet. Create a project and add your first node.</p>

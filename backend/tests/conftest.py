@@ -81,6 +81,8 @@ async def neo4j(settings: Settings) -> AsyncIterator[Neo4jClient]:
     await db.connect()
     try:
         if not await db.verify():
+            if os.environ.get("OSINTREE_REQUIRE_NEO4J"):  # CI: a silent skip would hide failures
+                pytest.fail(f"Neo4j not reachable at {settings.neo4j_uri}")
             pytest.skip(f"Neo4j not reachable at {settings.neo4j_uri}")
         await db.ensure_schema()
         yield db

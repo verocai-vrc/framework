@@ -22,6 +22,17 @@
   const showError = (err) => toast(err.detail || err.message || t("error.generic"), "error");
 
   // ---- health ---------------------------------------------------------------------
+  let wasOnline = null;
+  function setOffline(offline) {
+    let banner = $("offline-banner");
+    if (offline && !banner) {
+      banner = document.createElement("div");
+      banner.id = "offline-banner";
+      banner.className = "offline-banner";
+      banner.textContent = t("graph.offline");
+      document.querySelector(".graph-panel").appendChild(banner);
+    } else if (!offline && banner) banner.remove();
+  }
   async function refreshHealth() {
     const badge = $("badge-health"), text = $("badge-health-text"), guard = $("badge-passive");
     try {
@@ -32,11 +43,28 @@
       guard.dataset.state = h.passive_only ? "passive" : "active";
       guard.firstElementChild.textContent = h.passive_only ? t("guard.passive") : t("guard.active");
       document.title = `${h.app} — Attack Surface Mapper`;
+      setOffline(!ok);
+      // Back after an outage: reload the project so the canvas mirrors the database again.
+      if (wasOnline === false && ok && state.project) switchProject(state.project.id).catch(showError);
+      wasOnline = ok;
     } catch (_) {
       badge.dataset.state = "offline";
       text.textContent = t("health.offline");
+      setOffline(true);
+      wasOnline = false;
     }
   }
+
+  // ---- global error handling -------------------------------------------------------
+  // Anything that escapes a handler still surfaces as a toast instead of dying silently
+  // in the console (the native window has no devtools open).
+  window.addEventListener("unhandledrejection", (e) => {
+    const r = e.reason || {};
+    toast(t("error.unexpected", { msg: r.detail || r.message || String(r) }), "error");
+  });
+  window.addEventListener("error", (e) => {
+    if (e.message) toast(t("error.unexpected", { msg: e.message }), "error");
+  });
 
   // ---- projects -------------------------------------------------------------------
   function rememberProject(id) { try { localStorage.setItem("osintree.project", id); } catch (_) { /* ignore */ } }
@@ -351,6 +379,11 @@
     $("btn-add-edge").onclick = () => { if (!state.project) return openNewProject(true); Graph.enterAddEdgeMode(); };
     $("btn-delete").onclick = deleteSelection;
     $("btn-layout").onclick = () => Graph.relayout();
+    $("btn-cluster").onclick = () => { if (state.project) Graph.toggleCluster(); };
+    const loc = $("locale-select");
+    loc.value = window.I18N.locale;
+    // Panels are rendered from strings at run time, so a locale change is a clean reload.
+    loc.onchange = () => { window.Editor.flush(); window.I18N.setLocale(loc.value); location.reload(); };
     $("btn-new-project").onclick = () => openNewProject(false);
     $("btn-project-settings").onclick = openProjectSettings;
     $("btn-export").onclick = exportProject;

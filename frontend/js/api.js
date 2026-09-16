@@ -2,7 +2,8 @@
  * so callers can show the server's message. */
 window.API = (() => {
   async function request(method, path, body) {
-    const init = { method, headers: {} };
+    // X-Locale lets the backend translate domain error messages (see app.main).
+    const init = { method, headers: { "X-Locale": (window.I18N && window.I18N.locale) || "en" } };
     if (body !== undefined) {
       init.headers["Content-Type"] = "application/json";
       init.body = JSON.stringify(body);

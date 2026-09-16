@@ -89,16 +89,16 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 
 | File | Responsibility |
 |------|----------------|
-| `js/i18n.js`   | All UI strings (`en`, `pt`), `t()`, `apply()`. |
-| `js/api.js`    | `fetch` wrapper; errors carry the server's `detail`. |
+| `js/i18n.js`   | All UI strings (`en`, `pt`), `t()`, `apply()`, `setLocale()` (topbar switcher; a change reloads the page because panels are rendered from strings). |
+| `js/api.js`    | `fetch` wrapper; errors carry the server's `detail`; sends `X-Locale` so backend error messages match the UI language. |
 | `js/schema.js` | Loads `/api/schema`; display names, axis colours, shapes, `allowedRels(src, dst)`. |
 | `js/modals.js` | Modal host, confirm dialog, schema-driven form inputs. |
-| `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook; edge colour by impact; path overlay (`highlightPath`/`clearHighlight`). |
+| `js/graph.js`  | vis-network canvas; mirrors backend state only; drag-to-connect hook; edge colour by impact; path overlay (`highlightPath`/`clearHighlight`); axis clustering (`toggleCluster`: one vis cluster per axis, click to open, expanded automatically before any overlay/relayout/select); legend (built from the schema colours); `fitView` fits the path while an overlay is on, the whole graph otherwise. |
 | `js/collectors.js` | Tools panel: run collectors on the seed or the selected node; blocked collectors shown locked; review badge. Manual OSINT tool reference list (links only). |
 | `js/review.js` | Review queue modal: pending/approved/rejected tabs, inline edit, approve/reject (single and bulk), purge. |
 | `js/editor.js` | Entity editor: title, typed attributes, layer, description, Markdown notes (marked preview), metadata, neighbours, provenance; debounced autosave; re-type dialog; edge editor (impact/probability override or “auto”, risk level, weight, notes). |
 | `js/analysis.js` | Analysis tab: run (entry policy, weighted toggle), criteria cards, path cards with canvas highlight, ranked high-impact and unclassified cross-axis edges (click → edge editor), centrality, report download/open (format + locale). |
-| `js/app.js`    | Glue: projects, toolbar, tools-panel tabs, node/edge dialogs, selection → editor. Exposes `window.App`. |
+| `js/app.js`    | Glue: projects, toolbar, tools-panel tabs, node/edge dialogs, selection → editor, language switcher, health polling with an “engine unreachable” banner (reloads the project once the engine is back), global `error`/`unhandledrejection` → toast. Exposes `window.App`. |
 
 Node property storage: attribute models are flattened onto the Neo4j node (so `Dominio.name`,
 `Endereco_IP.address`, `CVE.cve_id` indexes apply); `metadata` is stored as `metadata_json`.
@@ -144,4 +144,26 @@ clears the override and the stale `risk_level`.
 ## Resilience
 
 The API starts even if Neo4j is down (`/health` reports `degraded`). Schema application is
-lazy and idempotent: the first successful connectivity check applies it.
+lazy and idempotent: the first successful connectivity check applies it. The UI polls
+`/health` every 15 s; while the engine or the database is down it shows a banner and, when
+they return, reloads the current project so the canvas mirrors the database again.
+
+## Offline operation
+
+After `make install`, the app needs no network: the front-end libraries and fonts are
+vendored under `frontend/vendor/` (`scripts/vendor-frontend.sh` pins the versions in
+`frontend/vendor/VERSIONS`), the HTML report inlines its CSS, and the engine only opens
+outbound connections inside a collector run. `backend/tests/test_offline.py` enforces this
+by scanning the served files and the rendered report for external asset references.
+
+## Tests
+
+| Layer | Files | Needs |
+|-------|-------|-------|
+| Unit (schema, models, collectors' parsers, risk engine, criteria, report, offline guarantee, desktop shell) | `test_schema.py`, `test_models.py`, `test_schema_api.py`, `test_health.py`, `test_collectors_unit.py`, `test_analysis_unit.py`, `test_offline.py`, `test_desktop.py` | nothing (fake DB, `respx`-mocked HTTP) |
+| Integration (CRUD, import/export, staging/merge, analysis, paths) | `test_crud_integration.py`, `test_io_integration.py`, `test_review_integration.py`, `test_analysis_integration.py` | live Neo4j (auto-skip when down; `OSINTREE_REQUIRE_NEO4J=1` turns the skip into a failure, as CI does) |
+| End-to-end smoke | `test_smoke_e2e.py` | live Neo4j; third-party HTTP mocked from recorded fixtures |
+
+No test makes a live network call: `respx` runs with `assert_all_mocked=True`, so an
+unexpected URL fails the test. `.github/workflows/ci.yml` runs lint + unit tests, then the
+full suite against a Neo4j service container with APOC and GDS.
