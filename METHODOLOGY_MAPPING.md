@@ -14,7 +14,7 @@
 | Passive vs active collection (Section 2.1) | `app/config.py` `PASSIVE_ONLY`; `Collector.interacts_with_target`; `app/collectors/registry.py::check_passive_guard` runs before any collector; `active_example.py` demonstrates the refusal |
 | Human-in-the-loop review | `app/review/staging.py`: collectors write `:Candidate` only; `approve()` is the sole path into the live graph |
 | Provenance (`source`, `collected_at`, `reviewed`) | `app/models/common.py::Provenance`; manual = `manual/true`; collector merges = `<collector>/true`; candidates carry the run timestamp |
-| Source families: CT logs, RDAP/WHOIS, ASN, NVD/CVE | `crtsh.py`, `rdap.py`, `bgp.py`, `nvd.py` (`source_family` attribute and module docstrings) |
+| Source families: CT logs, RDAP/WHOIS, ASN, NVD/CVE, scan index, web archives, geographic registries | `crtsh.py`, `rdap.py`, `bgp.py`, `nvd.py`, `internetdb.py`, `wayback.py`, `facilities.py` (`source_family` attribute and module docstrings) |
 
 ### Where each mapping is verified
 

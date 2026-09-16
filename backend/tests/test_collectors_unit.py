@@ -28,7 +28,15 @@ def test_all_builtin_collectors_are_passive_and_documented():
         if c.name == "active_probe_example":
             continue
         assert c.interacts_with_target is False, c.name
-        assert c.source_family in {"CT logs", "RDAP/WHOIS", "ASN/BGP", "NVD/CVE"}
+        assert c.source_family in {
+            "CT logs",
+            "RDAP/WHOIS",
+            "ASN/BGP",
+            "NVD/CVE",
+            "Scan index (Shodan)",
+            "Web archives",
+            "Geographic registries",
+        }
         module_doc = sys.modules[type(c).__module__].__doc__ or ""
         assert "thesis" in module_doc.lower(), f"{c.name} must cite its thesis source family"
 

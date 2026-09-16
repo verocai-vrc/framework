@@ -1,0 +1,281 @@
+{
+ "version": 0.6,
+ "generator": "Overpass API 0.7.62.11 87bfad18",
+ "osm3s": {
+  "timestamp_osm_base": "2026-09-16T14:30:38Z",
+  "timestamp_areas_base": "2026-09-14T22:47:02Z",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+ },
+ "elements": [
+  {
+   "type": "node",
+   "id": 6514378451,
+   "lat": -25.4085118,
+   "lon": -54.5853701,
+   "tags": {
+    "generator:output:electricity": "700 MW",
+    "generator:source": "hydro",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "power": "generator",
+    "ref": "U 18"
+   }
+  },
+  {
+   "type": "node",
+   "id": 6514378452,
+   "lat": -25.408582,
+   "lon": -54.5850429,
+   "tags": {
+    "generator:output:electricity": "700 MW",
+    "generator:source": "hydro",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "power": "generator",
+    "ref": "U 18a"
+   }
+  },
+  {
+   "type": "node",
+   "id": 6514378453,
+   "lat": -25.4080539,
+   "lon": -54.5878968,
+   "tags": {
+    "generator:output:electricity": "700 MW",
+    "generator:source": "hydro",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "power": "generator",
+    "ref": "U 13"
+   }
+  },
+  {
+   "type": "way",
+   "id": 32300816,
+   "center": {
+    "lat": -25.4356583,
+    "lon": -54.5650407
+   },
+   "tags": {
+    "cables": "3",
+    "circuits": "1",
+    "description": "LT UHE Itaipu/Foz do Iguaçu",
+    "frequency": "60",
+    "name": "IPU 60Hz FI3",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "power": "line",
+    "source": "Yahoo imagery",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "way",
+   "id": 32300822,
+   "center": {
+    "lat": -25.4356158,
+    "lon": -54.5646559
+   },
+   "tags": {
+    "cables": "3",
+    "circuits": "1",
+    "description": "LT UHE Itaipu/Foz do Iguaçu",
+    "frequency": "60",
+    "name": "IPU 60Hz FI4",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "power": "line",
+    "source": "Yahoo imagery",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "way",
+   "id": 693846333,
+   "center": {
+    "lat": -25.4080834,
+    "lon": -54.5882967
+   },
+   "tags": {
+    "cables": "3",
+    "circuits": "1",
+    "description": "LT UHE Itaipu/Foz do Iguaçu",
+    "frequency": "60",
+    "name": "IPU 60Hz FI1",
+    "operator": "ITAIPU Binacional",
+    "power": "line",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "way",
+   "id": 696044778,
+   "center": {
+    "lat": -24.0452698,
+    "lon": -54.2857119
+   },
+   "tags": {
+    "alt_name": "Refúgio Biológico Mbaracayú",
+    "leaf_type": "mixed",
+    "leisure": "nature_reserve",
+    "name": "Refúgio Binacional de Mbaracaju",
+    "natural": "wood",
+    "operator": "Itaipu Binacional"
+   }
+  },
+  {
+   "type": "way",
+   "id": 1094391578,
+   "center": {
+    "lat": -25.4645358,
+    "lon": -54.5427745
+   },
+   "tags": {
+    "cables": "3",
+    "circuits": "1",
+    "description": "LT UHE Itaipu/Foz do Iguaçu",
+    "frequency": "60",
+    "line": "busbar",
+    "name": "IPU 60Hz FI1",
+    "operator": "ITAIPU Binacional",
+    "power": "line",
+    "source": "Yahoo imagery",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588989,
+   "center": {
+    "lat": -25.4149887,
+    "lon": -54.5999797
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "50",
+    "name": "IPU-MD1",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588991,
+   "center": {
+    "lat": -25.4149887,
+    "lon": -54.5999797
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "50",
+    "name": "IPU 50Hz FI1",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588993,
+   "center": {
+    "lat": -25.4385326,
+    "lon": -54.5650232
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "60",
+    "name": "IPU 60Hz FI1",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588994,
+   "center": {
+    "lat": -25.4385326,
+    "lon": -54.5650232
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "60",
+    "name": "IPU 60Hz FI2",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588995,
+   "center": {
+    "lat": -25.4385326,
+    "lon": -54.5650232
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "60",
+    "name": "IPU 60Hz FI3",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 8588996,
+   "center": {
+    "lat": -25.4385326,
+    "lon": -54.5650232
+   },
+   "tags": {
+    "cables": "3",
+    "frequency": "60",
+    "name": "IPU 60Hz FI4",
+    "operator": "ITAIPU Binacional",
+    "operator:wikidata": "Q244169",
+    "route": "power",
+    "type": "route",
+    "voltage": "500000",
+    "wires": "quad"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 9674269,
+   "center": {
+    "lat": -24.0318447,
+    "lon": -54.3038984
+   },
+   "tags": {
+    "alt_name": "Refúgio Biológico Mbaracayú",
+    "boundary": "protected_area",
+    "name": "Refúgio Binacional de Mbaracaju",
+    "operator": "Itaipu Binacional",
+    "protect_class": "99",
+    "type": "boundary"
+   }
+  }
+ ]
+}

@@ -21,8 +21,27 @@ async def test_collectors_listing_reports_guard_state(client):
     res = await client.get("/api/collectors")
     assert res.status_code == 200
     by_name = {c["name"]: c for c in res.json()}
-    assert set(by_name) == {"crtsh", "rdap", "bgp", "nvd", "active_probe_example"}
-    for name in ("crtsh", "rdap", "bgp", "nvd"):
+    assert set(by_name) == {
+        "crtsh",
+        "rdap",
+        "bgp",
+        "nvd",
+        "internetdb",
+        "wayback",
+        "wayback_people",
+        "facilities",
+        "active_probe_example",
+    }
+    for name in (
+        "crtsh",
+        "rdap",
+        "bgp",
+        "nvd",
+        "internetdb",
+        "wayback",
+        "wayback_people",
+        "facilities",
+    ):
         assert by_name[name]["interacts_with_target"] is False and by_name[name]["allowed"] is True
     assert by_name["active_probe_example"]["interacts_with_target"] is True
     assert by_name["active_probe_example"]["allowed"] is False
@@ -304,3 +323,166 @@ async def test_empty_result_and_missing_seed(live_client, project, mocked_source
         assert res.status_code == 404
     finally:
         await live_client.delete(f"/api/projects/{npid}")
+
+
+async def test_internetdb_ports_software_cve_and_ics(live_client, mocked_sources):
+    res = await live_client.post(
+        "/api/projects", json={"name": "idb", "org_name": "IANA (test)", "seed_domain": "iana.org"}
+    )
+    proj = res.json()
+    pid = proj["id"]
+    ip = await _node(live_client, pid, "Endereco_IP", {"address": "192.0.43.8"})
+
+    report = await _run(live_client, pid, "internetdb", node_id=ip["id"])
+    by_kind: dict[str, list[dict]] = {}
+    for c in report["candidates"]:
+        by_kind.setdefault(c["kind"], []).append(c)
+    upd = by_kind["node_update"][0]
+    assert upd["target_id"] == ip["id"] and upd["metadata"]["shodan_ports"] == "21, 80, 443"
+    services = {c["attrs"]["port"]: c for c in by_kind["node"] if c["label"] == "Servico"}
+    assert set(services) == {21, 80, 443} and services[80]["attrs"]["service"] == "http"
+    software = [c for c in by_kind["node"] if c["label"] == "Software"]
+    assert (
+        software[0]["attrs"]["product"] == "http_server"
+        and software[0]["attrs"]["vendor"] == "apache"
+    )
+    for c in report["candidates"]:
+        res = await live_client.post(f"/api/candidates/{c['id']}/approve")
+        assert res.status_code == 200, res.text
+    graph = (await live_client.get(f"/api/projects/{pid}/graph")).json()
+    assert any(n["label"] == "Servico" and n["attrs"]["port"] == 80 for n in graph["nodes"])
+    assert any(
+        n["label"] == "Software" and n["attrs"]["product"] == "http_server" for n in graph["nodes"]
+    )
+
+    # A second, synthetic ICS host: OT ports, ICS tag, CVEs and a reverse hostname in scope.
+    ip2 = await _node(live_client, pid, "Endereco_IP", {"address": "203.0.113.10"})
+    report = await _run(live_client, pid, "internetdb", node_id=ip2["id"])
+    ot_services = [
+        c for c in report["candidates"] if c["label"] == "Servico" and c["layer"] == "TO"
+    ]
+    assert sorted(c["attrs"]["port"] for c in ot_services) == [102, 502]
+    ics = next(c for c in report["candidates"] if c["label"] == "Dispositivo_Industrial")
+    assert ics["attrs"]["device_type"] == "Internet-exposed ICS host" and ics["layer"] == "TO"
+    cves = sorted(c["attrs"]["cve_id"] for c in report["candidates"] if c["label"] == "CVE")
+    assert cves == ["CVE-2016-9042", "CVE-2018-1312"]
+    hosts = [c for c in report["candidates"] if c["label"] == "Dominio"]
+    assert [h["attrs"]["name"] for h in hosts] == [
+        "plc1.scada.iana.org"
+    ]  # out-of-scope host dropped
+
+    # 404 (no Shodan record) yields no findings, not an error.
+    ip3 = await _node(live_client, pid, "Endereco_IP", {"address": "203.0.113.99"})
+    report = await _run(live_client, pid, "internetdb", node_id=ip3["id"])
+    assert report["findings"] == 0
+    await live_client.delete(f"/api/projects/{pid}")
+
+
+async def test_wayback_hosts_and_people(live_client, mocked_sources):
+    res = await live_client.post(
+        "/api/projects", json={"name": "wb", "org_name": "IANA (test)", "seed_domain": "iana.org"}
+    )
+    proj = res.json()
+    pid = proj["id"]
+    try:
+        report = await _run(live_client, pid, "wayback")
+        hosts = sorted(c["attrs"]["name"] for c in report["candidates"])
+        assert hosts == ["ftp.iana.org", "legacy.iana.org", "rs.iana.org"]
+        first = next(c for c in report["candidates"] if c["attrs"]["name"] == "legacy.iana.org")
+        assert first["edges"] == [
+            {"rel": "PERTENCE_A", "other_id": proj["root_node_id"], "direction": "out"}
+        ]
+        assert first["metadata"]["wayback_urls"] == "2"
+        for c in report["candidates"]:
+            assert (await live_client.post(f"/api/candidates/{c['id']}/approve")).status_code == 200
+
+        report = await _run(live_client, pid, "wayback_people")
+        people = {c["attrs"]["name"]: c for c in report["candidates"]}
+        assert set(people) == {
+            "Ana Beatriz de Souza",
+            "Carlos Eduardo Lima",
+            "John Smith",
+            "Maria Oliveira",
+        }
+        ana = people["Ana Beatriz de Souza"]
+        assert (
+            ana["attrs"]["role"] == "Diretora de Operações"
+            and ana["attrs"]["email"] == "ana.souza@iana.org"
+        )
+        assert ana["edges"] == [
+            {"rel": "TRABALHA_EM", "other_id": proj["root_node_id"], "direction": "out"}
+        ]
+        assert ana["label"] == "Funcionario"
+        res = await live_client.post(f"/api/candidates/{ana['id']}/approve")
+        assert res.status_code == 200
+
+        # empty domain: CDX returns an empty body, not an error
+        report = await _run(live_client, pid, "wayback", seed="nothing.test")
+        assert report["findings"] == 0
+    finally:
+        await live_client.delete(f"/api/projects/{pid}")
+
+
+async def test_facilities_wikidata_and_osm(live_client, mocked_sources):
+    res = await live_client.post(
+        "/api/projects", json={"name": "fac", "org_name": "IANA (test)", "seed_domain": "icann.org"}
+    )
+    proj = res.json()
+    pid = proj["id"]
+    try:
+        report = await _run(live_client, pid, "facilities")
+        upd = next(c for c in report["candidates"] if c["kind"] == "node_update")
+        assert upd["target_id"] == proj["root_node_id"]
+        assert upd["metadata"]["wikidata_id"] == "Q485750"
+        assert upd["metadata"]["wikidata_matched_by"].startswith("website matches")
+        hq = next(
+            c for c in report["candidates"] if c["attrs"].get("facility_type") == "headquarters"
+        )
+        assert hq["attrs"]["latitude"] == 34.05223 and hq["attrs"]["longitude"] == -118.24368
+        assert hq["edges"] == [
+            {"rel": "PERTENCE_A", "other_id": proj["root_node_id"], "direction": "out"}
+        ]
+        # ICANN's Wikidata "operator of" facts (TLDs, root zone) are not georeferenced, so no
+        # candidates come from them; Overpass has no US area configured, so no OSM candidates.
+        assert all(
+            c["attrs"].get("facility_type") != "sponsored top-level domain"
+            for c in report["candidates"]
+        )
+        for c in report["candidates"]:
+            assert (await live_client.post(f"/api/candidates/{c['id']}/approve")).status_code == 200
+    finally:
+        await live_client.delete(f"/api/projects/{pid}")
+
+    # A Brazilian organization with a country code on the root node: Overpass runs too.
+    res = await live_client.post(
+        "/api/projects",
+        json={"name": "fac-br", "org_name": "Itaipu Binacional", "seed_domain": "itaipu.gov.br"},
+    )
+    proj = res.json()
+    pid = proj["id"]
+    try:
+        res = await live_client.patch(
+            f"/api/nodes/{proj['root_node_id']}",
+            json={"attrs": {"name": "Itaipu Binacional", "country": "BR"}},
+        )
+        assert res.status_code == 200, res.text
+        report = await _run(live_client, pid, "facilities")
+        osm = [c for c in report["candidates"] if c["metadata"].get("osm_id")]
+        assert osm and any(c["attrs"]["facility_type"] == "power=generator" for c in osm)
+        assert all(
+            c["metadata"]["osm_url"].startswith("https://www.openstreetmap.org/") for c in osm
+        )
+    finally:
+        await live_client.delete(f"/api/projects/{pid}")
+
+    # No Wikidata hit and no country on the root node: a clear error, not a silent no-op.
+    res = await live_client.post(
+        "/api/projects", json={"name": "fac-nohit", "org_name": "Zzqq Vvxx Corp"}
+    )
+    proj = res.json()
+    pid = proj["id"]
+    try:
+        res = await live_client.post(f"/api/projects/{pid}/collectors/facilities/run", json={})
+        assert res.status_code == 422 and res.json()["code"] == "error.collector_input"
+    finally:
+        await live_client.delete(f"/api/projects/{pid}")

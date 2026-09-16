@@ -33,6 +33,7 @@ class InputKind(StrEnum):
     IP = "ip"
     ASN = "asn"
     SOFTWARE = "software"
+    ORG = "org"  # organization name (project org_name / root node), for FISICO lookups
 
 
 class PassiveGuardViolation(DomainError):
@@ -54,7 +55,10 @@ class FindingEdge(BaseModel):
 
 
 class Finding(BaseModel):
-    kind: Literal["node", "node_update"] = "node"
+    """``node``: a new node; ``node_update``: enrich ``target_id``; ``edge``: only attach
+    ``edges`` to the existing ``target_id`` (the node itself is already in the graph)."""
+
+    kind: Literal["node", "node_update", "edge"] = "node"
     label: NodeLabel | None = None
     attrs: dict[str, Any] = Field(default_factory=dict)
     title: str | None = None

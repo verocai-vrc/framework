@@ -17,23 +17,42 @@ window.Collectors = (() => {
     { axis: "DIGITAL", title: "tools.ref.digital", items: [
       ["crt.sh", "https://crt.sh", "Certificate Transparency logs"],
       ["Subfinder", "https://github.com/projectdiscovery/subfinder", "passive subdomain enumeration"],
-      ["Shodan", "https://www.shodan.io", "exposed devices and services (key-gated: manual import)"],
+      ["Amass", "https://github.com/owasp-amass/amass", "passive-mode attack-surface mapping"],
+      ["theHarvester", "https://github.com/laramies/theHarvester", "passive recon aggregator (also HUMANO)"],
+      ["Recon-ng", "https://github.com/lanmaster53/recon-ng", "modular passive recon framework"],
+      ["SpiderFoot", "https://github.com/smicallef/spiderfoot", "OSINT automation across many sources"],
+      ["Shodan", "https://www.shodan.io", "exposed devices and services (key-gated beyond InternetDB: manual import)"],
       ["Censys", "https://search.censys.io", "attack-surface search (key-gated: manual import)"],
+      ["ZoomEye", "https://www.zoomeye.org", "cyberspace search engine (key-gated: manual import)"],
+      ["FOFA", "https://fofa.info", "cyberspace search engine (key-gated: manual import)"],
+      ["DNSDumpster", "https://dnsdumpster.com", "passive DNS reconnaissance"],
+      ["urlscan.io", "https://urlscan.io", "URL/website scan search"],
+      ["Wayback Machine", "https://web.archive.org", "historical snapshots (also used by the wayback collector)"],
       ["NVD/CVE", "https://nvd.nist.gov/vuln/search", "vulnerability database"],
+      ["CISA KEV", "https://www.cisa.gov/known-exploited-vulnerabilities-catalog", "known exploited vulnerabilities"],
       ["ExploitDB", "https://www.exploit-db.com", "public exploits"],
     ]},
     { axis: "HUMANO", title: "tools.ref.humano", items: [
       ["theHarvester", "https://github.com/laramies/theHarvester", "e-mails and names from open sources"],
       ["HaveIBeenPwned", "https://haveibeenpwned.com", "leaked credentials"],
+      ["DeHashed", "https://dehashed.com", "breach/credential search (key-gated: manual import)"],
       ["LinkedIn", "https://www.linkedin.com", "roles and profiles (SOCMINT)"],
+      ["Sherlock", "https://github.com/sherlock-project/sherlock", "username search across platforms"],
+      ["OSINT Framework", "https://osintframework.com", "curated index of OSINT tools by category"],
     ]},
     { axis: "FISICO", title: "tools.ref.fisico", items: [
       ["Google Earth / Maps", "https://earth.google.com", "satellite and street imagery of facilities"],
+      ["OpenStreetMap", "https://www.openstreetmap.org", "facility tagging (also used by the facilities collector)"],
+      ["Wikidata", "https://www.wikidata.org", "organization facts, HQ and operated sites (also used by the facilities collector)"],
+      ["ANEEL SIGA", "https://sigel.aneel.gov.br", "Brazilian power-generation facility registry"],
+      ["ANP dados abertos", "https://www.gov.br/anp/pt-br/acesso-a-informacao/dados-abertos", "Brazilian oil/gas facility datasets"],
       ["Regulator registries", "https://www.gov.br/aneel", "public facility records (e.g. ANEEL)"],
     ]},
     { axis: "ECOSSISTEMA", title: "tools.ref.ecossistema", items: [
       ["RDAP", "https://client.rdap.org", "domain and IP registration"],
       ["RIPEstat", "https://stat.ripe.net", "ASN / BGP data"],
+      ["BGP.HE.NET", "https://bgp.he.net", "ASN / prefix / peering lookup"],
+      ["Wikidata", "https://www.wikidata.org", "corporate structure, subsidiaries, suppliers"],
       ["Procurement portals", "https://www.gov.br/compras", "public contracts and suppliers"],
     ]},
   ];
@@ -51,6 +70,9 @@ window.Collectors = (() => {
     if (c.input_kind === "ip") {
       return `<input type="text" class="seed-input" data-c="${c.name}" placeholder="${t("collectors.seed_ip_ph")}">`;
     }
+    if (c.input_kind === "org") {
+      return `<input type="text" class="seed-input" data-c="${c.name}" value="${escape(proj.org_name || "")}" placeholder="${t("collectors.seed_org_ph")}">`;
+    }
     return `<span class="muted small seed-note" data-c="${c.name}">${t("collectors.needs_software")}</span>`;
   }
 
@@ -59,6 +81,7 @@ window.Collectors = (() => {
     if (c.input_kind === "software" && selected.label === "Software") return selected;
     if (c.input_kind === "ip" && (selected.label === "Endereco_IP" || (selected.label === "Fornecedor" && selected.attrs.asn))) return selected;
     if (c.input_kind === "domain" && selected.label === "Dominio") return selected;
+    if (c.input_kind === "org" && selected.label === "Organizacao") return selected;
     return null;
   }
 

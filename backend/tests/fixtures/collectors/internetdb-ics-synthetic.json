@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic InternetDB record (same shape as https://internetdb.shodan.io/{ip}) for an Internet-exposed ICS host; documentation IP (RFC 5737).",
+  "cpes": ["cpe:/a:openbsd:openssh:7.4", "cpe:/o:siemens:simatic_s7-300_firmware", "cpe:2.3:a:apache:http_server:2.4.29"],
+  "hostnames": ["plc1.scada.iana.org", "unrelated.example.net"],
+  "ip": "203.0.113.10",
+  "ports": [22, 80, 102, 502],
+  "tags": ["ics"],
+  "vulns": ["CVE-2018-1312", "CVE-2016-9042", "not-a-cve"]
+}

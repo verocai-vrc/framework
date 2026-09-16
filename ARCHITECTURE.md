@@ -65,7 +65,7 @@ Single process, single user, bound to `127.0.0.1`. No build step for the front-e
 | `app/graph/io.py`      | Export (`osintree/1`, lossless incl. ids/provenance) and import: typed files (ids kept unless they collide) and the reference tool's legacy `{meta, nodes, edges}` format (best-effort, warnings, anchoring edges, unknown types become re-typable defaults). |
 | `app/collectors/base.py` | `Collector` interface (`name`, `interacts_with_target`, `axis`, `input_kind`, `source_family`), `Finding`/`FindingEdge`, `RunContext`, guard error. |
 | `app/collectors/http.py` | Shared `httpx` client: timeouts, per-host rate limiting, retry/backoff, 24 h on-disk cache. |
-| `app/collectors/{crtsh,rdap,bgp,nvd}.py` | Built-in passive collectors; each docstring names its thesis source family. |
+| `app/collectors/{crtsh,rdap,bgp,nvd,internetdb,wayback,facilities}.py` | Built-in passive collectors; each docstring names its thesis source family. `wayback.py` holds both `wayback` (hostnames) and `wayback_people` (HUMANO). |
 | `app/collectors/active_example.py` | Stub with `interacts_with_target = True`; refused by the guard, never contacts anything. |
 | `app/collectors/registry.py` | Discovery, **passive guard** (`check_passive_guard`, applied before seed resolution), seed resolution from a node or a string, run pipeline collect → stage. |
 | `app/review/staging.py` | `:Candidate` store (never `:Entity`); dedupe against pending/approved/in-graph; edit; **merge-on-approve** (`reviewed = true`, `source = collector`); reject; purge. |

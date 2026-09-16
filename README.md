@@ -152,15 +152,32 @@ collectors, analysis, review queue, import/export) and the **entity editor** (ri
 
 | Collector | Thesis source family | Input | Produces |
 |-----------|----------------------|-------|----------|
-| `crtsh`   | CT logs              | seed domain (or a selected `Dominio`) | `Dominio` candidates anchored to the `Organizacao` |
-| `rdap`    | RDAP/WHOIS           | selected `Endereco_IP`, or an IP/ASN | enrichment of the address; `Fornecedor` (registrant) with `MANTEM_ACESSO_A` |
-| `bgp`     | ASN/BGP (RIPEstat)   | selected `Endereco_IP`, or an IP/ASN | enrichment (origin ASN); `Fornecedor` (ASN holder) with `MANTEM_ACESSO_A` |
-| `nvd`     | NVD/CVE              | selected `Software` | `CVE` candidates with `POSSUI_VULNERABILIDADE` |
+| `crtsh`     | CT logs                  | seed domain (or a selected `Dominio`) | `Dominio` candidates anchored to the `Organizacao` |
+| `rdap`      | RDAP/WHOIS               | selected `Endereco_IP`, or an IP/ASN | enrichment of the address; `Fornecedor` (registrant) with `MANTEM_ACESSO_A` |
+| `bgp`       | ASN/BGP (RIPEstat)       | selected `Endereco_IP`, or an IP/ASN | enrichment (origin ASN); `Fornecedor` (ASN holder) with `MANTEM_ACESSO_A` |
+| `nvd`       | NVD/CVE                  | selected `Software` | `CVE` candidates with `POSSUI_VULNERABILIDADE` |
+| `internetdb`| Scan index (Shodan)      | selected `Endereco_IP`, or an IP | enrichment of the address; `Servico` per open port (OT ports tagged `TO`); `Software` from CPEs with `HOSPEDA`; `CVE` with `POSSUI_VULNERABILIDADE`; `Dispositivo_Industrial` when Shodan tags the host `ics` or an OT port is open; in-scope reverse hostnames as `Dominio` |
+| `wayback`   | Web archives             | seed domain (or a selected `Dominio`) | `Dominio` candidates for every hostname the Wayback Machine has archived under the seed |
+| `wayback_people` | Web archives        | seed domain (or a selected `Dominio`) | `Funcionario` candidates (name/role/e-mail) heuristically extracted from archived team/contact pages |
+| `facilities`| Geographic registries    | organization name (project org name, or a selected `Organizacao`) | enrichment of the org (Wikidata id, industry, parent, employees); `Instalacao_Fisica` candidates from Wikidata (headquarters, operated/owned sites) and, when the org's `country` (ISO-3166 alpha-2) is set, from OpenStreetMap |
 
 Results never enter the graph directly: they land in the **review queue**, where each
 candidate is approved (merged with `reviewed = true` and `source = <collector>`), edited
 first, or rejected. Responses are cached on disk for 24 h under `.cache/collectors/` and
-requests are rate-limited per host (NVD: one request every 6 s, the unauthenticated limit).
+requests are rate-limited per host (NVD: one request every 6 s, the unauthenticated limit;
+Overpass and Wikidata are throttled similarly to be a polite client of shared infrastructure).
+
+`internetdb`, like the other collectors, only reads third-party indices — it queries
+Shodan's own cache, never the target. `facilities` reads Wikidata and OpenStreetMap, both
+crowd-sourced, so every candidate needs review before it enters the graph. Running
+`internetdb` again after approving its `Servico`/`Software` candidates lets a second pass
+attach the `HOSPEDA`/`POSSUI_VULNERABILIDADE` edges the first pass could not express yet
+(they can only point at nodes already in the graph).
+
+A curated, non-automated **tool reference** (per axis: DIGITAL, HUMANO, FISICO,
+ECOSSISTEMA) is in the Collectors panel — links to Amass, SpiderFoot, Shodan, Censys,
+DeHashed, LinkedIn, OpenStreetMap, Wikidata, ANEEL/ANP open data, and more. Key-gated
+services are never automated; bring their findings in by hand or via JSON import.
 
 `active_probe_example` is a stub that declares `interacts_with_target = True` and performs
 no network action; it exists to demonstrate the guard refusing it.

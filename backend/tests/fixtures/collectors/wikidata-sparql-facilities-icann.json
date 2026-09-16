@@ -1,0 +1,117 @@
+{
+  "head" : {
+    "vars" : [ "f", "fLabel", "coord", "typeLabel", "adminLabel", "rel" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q31636"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : ".int"
+      },
+      "typeLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "sponsored top-level domain"
+      }
+    }, {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q32867"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "root name server"
+      }
+    }, {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q242540"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "Internet Assigned Numbers Authority"
+      },
+      "typeLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "nonprofit organization"
+      }
+    }, {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q242540"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "Internet Assigned Numbers Authority"
+      },
+      "typeLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "registration authority"
+      }
+    }, {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q849163"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "DNS root zone"
+      },
+      "typeLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "DNS zone"
+      }
+    }, {
+      "f" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q849163"
+      },
+      "rel" : {
+        "type" : "literal",
+        "value" : "operator"
+      },
+      "fLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "DNS root zone"
+      },
+      "typeLabel" : {
+        "xml:lang" : "en",
+        "type" : "literal",
+        "value" : "convention"
+      }
+    } ]
+  }
+}

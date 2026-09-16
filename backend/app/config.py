@@ -45,7 +45,9 @@ class Settings(BaseSettings):
     # --- Collectors ---
     cache_dir: Path = REPO_ROOT / ".cache"
     http_timeout: float = 20.0
-    http_user_agent: str = "OSINTree/0.1 (+passive OSINT research tool)"
+    http_user_agent: str = (
+        "OSINTree/0.1 (+https://github.com/verocai-vrc/framework; passive OSINT research tool)"
+    )
 
     # --- UI / report localisation ---
     default_locale: str = "en"

@@ -17,9 +17,12 @@ from app.collectors.base import (
 )
 from app.collectors.bgp import BgpCollector
 from app.collectors.crtsh import CrtShCollector
+from app.collectors.facilities import FacilitiesCollector
 from app.collectors.http import CollectorHTTP
+from app.collectors.internetdb import InternetDbCollector
 from app.collectors.nvd import NvdCollector
 from app.collectors.rdap import RdapCollector
+from app.collectors.wayback import WaybackCollector, WaybackPeopleCollector
 from app.config import Settings
 from app.db.driver import Neo4jClient
 from app.db.schema import NodeLabel
@@ -37,6 +40,10 @@ REGISTRY: dict[str, Collector] = {
         RdapCollector(),
         BgpCollector(),
         NvdCollector(),
+        InternetDbCollector(),
+        WaybackCollector(),
+        WaybackPeopleCollector(),
+        FacilitiesCollector(),
         ActiveProbeExample(),
     )
 }
@@ -47,6 +54,11 @@ RATE_LIMITS = {
     "crt.sh": 1.5,
     "stat.ripe.net": 0.5,
     "data.iana.org": 0.2,
+    "internetdb.shodan.io": 1.0,
+    "web.archive.org": 1.5,
+    "www.wikidata.org": 1.0,
+    "query.wikidata.org": 1.0,
+    "overpass-api.de": 2.0,
     "default": 1.0,
 }
 
@@ -88,6 +100,23 @@ async def resolve_seed(
         if node is None or node.label is not NodeLabel.SOFTWARE:
             raise CollectorInputError("select a Software node to run this collector")
         return node.id
+    if kind is InputKind.ORG:
+        if node is not None and node.label is NodeLabel.ORGANIZACAO:
+            return str(node.attrs["name"])
+        if node is not None:
+            raise CollectorInputError(
+                f"a {node.label.value} node cannot seed the '{collector.name}' collector",
+                expected=NodeLabel.ORGANIZACAO.value,
+            )
+        if seed and seed.strip():
+            return seed.strip()
+        if ctx.project.org_name:
+            return ctx.project.org_name
+        if ctx.root is not None:
+            return str(ctx.root.attrs["name"])
+        raise CollectorInputError(
+            f"the '{collector.name}' collector needs an organization name (project org name)"
+        )
     if node is not None:
         if kind is InputKind.DOMAIN and node.label is NodeLabel.DOMINIO:
             return str(node.attrs["name"])

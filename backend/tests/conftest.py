@@ -187,4 +187,48 @@ def mocked_sources():
         mock.get("https://services.nvd.nist.gov/rest/json/cves/2.0").mock(
             return_value=httpx.Response(200, json=fixture_json("nvd-cves-empty.json"))
         )
+        # --- Sprint 6 sources ---
+        mock.get("https://internetdb.shodan.io/192.0.43.8").mock(
+            return_value=httpx.Response(200, json=fixture_json("internetdb-192.0.43.8.json"))
+        )
+        mock.get("https://internetdb.shodan.io/203.0.113.10").mock(
+            return_value=httpx.Response(200, json=fixture_json("internetdb-ics-synthetic.json"))
+        )
+        mock.get("https://internetdb.shodan.io/203.0.113.99").mock(
+            return_value=httpx.Response(404, json={"detail": "No information available"})
+        )
+        mock.get(
+            "https://web.archive.org/cdx/search/cdx", params__contains={"url": "*.iana.org"}
+        ).mock(return_value=httpx.Response(200, json=fixture_json("wayback-cdx-iana.json")))
+        mock.get(
+            "https://web.archive.org/cdx/search/cdx", params__contains={"url": "*.nothing.test"}
+        ).mock(return_value=httpx.Response(200, text=""))
+        staff_html = (FIXTURES / "wayback-page-staff.html").read_text(encoding="utf-8")
+        mock.get(url__regex=r"https://web\.archive\.org/web/\d+id_/.*").mock(
+            return_value=httpx.Response(200, text=staff_html)
+        )
+        mock.get(
+            "https://www.wikidata.org/w/api.php", params__contains={"search": "IANA (test)"}
+        ).mock(return_value=httpx.Response(200, json=fixture_json("wikidata-search-icann.json")))
+        mock.get(
+            "https://www.wikidata.org/w/api.php", params__contains={"search": "Itaipu Binacional"}
+        ).mock(return_value=httpx.Response(200, json={"search": []}))
+        mock.get("https://www.wikidata.org/w/api.php").mock(
+            return_value=httpx.Response(200, json={"search": []})
+        )
+
+        def sparql(request: httpx.Request) -> httpx.Response:
+            query = request.url.params.get("query", "")
+            name = "org" if "VALUES ?item" in query else "facilities"
+            return httpx.Response(200, json=fixture_json(f"wikidata-sparql-{name}-icann.json"))
+
+        mock.get("https://query.wikidata.org/sparql").mock(side_effect=sparql)
+
+        def overpass(request: httpx.Request) -> httpx.Response:
+            data = request.url.params.get("data", "")
+            if '"BR"' in data and "Itaipu" in data:
+                return httpx.Response(200, json=fixture_json("overpass-itaipu-br.json"))
+            return httpx.Response(200, json={"elements": []})
+
+        mock.get("https://overpass-api.de/api/interpreter").mock(side_effect=overpass)
         yield mock
