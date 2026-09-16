@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Env / local state
+.env
+.cache/
+*.log
+
+# Neo4j (docker volumes are named; native data lives outside the repo)
+neo4j-data/
+
+# Front-end vendoring scratch
+frontend/vendor/node_modules/
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

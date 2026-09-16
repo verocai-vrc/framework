@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSINT.ree — Attack Surface Mapper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ── Left column: Graph + Tools ─────────── -->
+  <div class="left-column">
+
+    <!-- Panel A: Canvas do Grafo -->
+    <div class="panel graph-panel">
+      <div id="network"></div>
+
+      <!-- Floating toolbar -->
+      <div class="graph-toolbar">
+        <button id="btn-shortest-path">⚡ Caminho Mínimo</button>
+        <button id="btn-risk-inventory">⚠ Inventário de Risco</button>
+        <button id="btn-add-node">＋ Nó</button>
+        <button id="btn-add-edge">→ Aresta</button>
+        <button id="btn-reset-layout">⟳ Layout</button>
+      </div>
+
+      <!-- Shortest path result badge -->
+      <div class="path-badge" id="path-badge" style="display:none"></div>
+    </div>
+
+    <!-- Panel C: Inventário de Ferramentas OSINT -->
+    <div class="panel tools-panel">
+      <h2>Ferramentas OSINT</h2>
+
+      <details class="tools-section" open>
+        <summary>
+          <span class="eixo-dot" style="background:#3b82f6"></span>
+          Digital (TI/TO)
+        </summary>
+        <ul>
+          <li><a href="https://github.com/projectdiscovery/subfinder" target="_blank">Subfinder</a> — enumeração passiva de subdomínios</li>
+          <li><a href="https://crt.sh" target="_blank">crt.sh</a> — Certificate Transparency Logs</li>
+          <li><a href="https://www.shodan.io" target="_blank">Shodan</a> — dispositivos e serviços expostos</li>
+          <li><a href="https://search.censys.io" target="_blank">Censys</a> — mapeamento de superfície de ataque</li>
+          <li><a href="https://www.zoomeye.org" target="_blank">ZoomEye</a> — ativos IoT/ICS na internet</li>
+          <li><a href="https://nvd.nist.gov/vuln/search" target="_blank">NVD/CVE</a> — base nacional de vulnerabilidades</li>
+          <li><a href="https://www.exploit-db.com" target="_blank">ExploitDB</a> — exploits públicos</li>
+          <li class="tool-note">⚠ Amass (modo ativo): intrusivo, fora do escopo passivo</li>
+        </ul>
+      </details>
+
+      <details class="tools-section">
+        <summary>
+          <span class="eixo-dot" style="background:#f59e0b"></span>
+          Humano (SOCMINT)
+        </summary>
+        <ul>
+          <li><a href="https://github.com/laramies/theHarvester" target="_blank">theHarvester</a> — e-mails e nomes em fontes abertas</li>
+          <li><a href="https://haveibeenpwned.com" target="_blank">HaveIBeenPwned</a> — credenciais vazadas</li>
+          <li><a href="https://dehashed.com" target="_blank">DeHashed</a> — base de dados vazados</li>
+          <li><a href="https://www.linkedin.com" target="_blank">LinkedIn</a> — perfis e cargos corporativos (SOCMINT)</li>
+        </ul>
+      </details>
+
+      <details class="tools-section">
+        <summary>
+          <span class="eixo-dot" style="background:#ef4444"></span>
+          Físico / Geográfico
+        </summary>
+        <ul>
+          <li><a href="https://earth.google.com" target="_blank">Google Earth</a> — imagens de satélite de instalações</li>
+          <li><a href="https://maps.google.com" target="_blank">Google Maps / Street View</a> — visão de campo</li>
+          <li><a href="https://www.aneel.gov.br" target="_blank">ANEEL</a> — registros públicos de instalações energéticas</li>
+        </ul>
+      </details>
+
+      <details class="tools-section">
+        <summary>
+          <span class="eixo-dot" style="background:#22c55e"></span>
+          Ecossistema (Cadeia de Suprimentos)
+        </summary>
+        <ul>
+          <li><a href="https://client.rdap.org" target="_blank">RDAP</a> — registro de domínios e IPs</li>
+          <li><a href="https://who.is" target="_blank">WHOIS</a> — informações de registro de domínios</li>
+          <li><a href="https://www.comprasgovernamentais.gov.br" target="_blank">Portal de Licitações</a> — contratos públicos e fornecedores</li>
+          <li><a href="https://transparencia.gov.br" target="_blank">Transparência Gov</a> — dados abertos governamentais</li>
+        </ul>
+      </details>
+
+      <details class="tools-section">
+        <summary>
+          <span class="eixo-dot" style="background:#6e7681"></span>
+          Modelagem e Análise
+        </summary>
+        <ul>
+          <li><a href="https://neo4j.com" target="_blank">Neo4j</a> — banco de dados em grafo</li>
+          <li><a href="https://neo4j.com/developer/cypher" target="_blank">Cypher</a> — linguagem de consulta para grafos</li>
+          <li><a href="https://www.wireshark.org" target="_blank">Wireshark</a> — análise de tráfego de rede</li>
+        </ul>
+      </details>
+
+      <!-- Import / Export -->
+      <div class="io-actions">
+        <button id="btn-export">↓ Exportar JSON</button>
+        <button id="btn-import">↑ Importar JSON</button>
+        <input type="file" id="input-import" accept=".json" style="display:none">
+      </div>
+    </div>
+
+  </div><!-- /left-column -->
+
+  <!-- ── Panel B: Editor de Entidade ─────────── -->
+  <div class="panel editor-panel">
+
+    <div id="editor-placeholder">
+      <p>Selecione um nó no grafo<br>para editar suas informações.</p>
+    </div>
+
+    <div id="editor-content" style="display:none">
+
+      <div class="node-header">
+        <input type="text" id="node-label" placeholder="Rótulo do nó">
+        <div class="node-badges">
+          <span class="badge badge-tipo" id="badge-tipo"></span>
+          <span class="badge badge-eixo" id="badge-eixo"></span>
+        </div>
+      </div>
+
+      <div>
+        <span class="section-label">Metadados</span>
+        <div id="metadata-fields"></div>
+      </div>
+
+      <div>
+        <span class="section-label">Descrição</span>
+        <textarea id="node-descricao" rows="4" placeholder="Descrição do ativo…"></textarea>
+      </div>
+
+      <div>
+        <span class="section-label">Observações</span>
+        <div id="obs-list"></div>
+        <button class="btn-sm" id="btn-add-obs">＋ Adicionar observação</button>
+      </div>
+
+      <div>
+        <span class="section-label">Vizinhos</span>
+        <div id="neighbors-list"></div>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn-secondary" id="btn-add-child">＋ Filho</button>
+        <button class="btn-danger"    id="btn-delete-node">🗑 Excluir</button>
+      </div>
+
+    </div>
+
+  </div><!-- /editor-panel -->
+
+</div><!-- /app-container -->
+
+<!-- ── Modal: Adicionar Nó ─────────────────────── -->
+<div class="modal-overlay" id="modal-add-node" style="display:none">
+  <div class="modal">
+    <h3>＋ Adicionar Nó</h3>
+
+    <div><label>Rótulo</label>
+      <input type="text" id="new-node-label-input" placeholder="Nome do ativo"></div>
+
+    <div><label>Tipo</label>
+      <select id="new-node-tipo">
+        <option>Organização</option>
+        <option>Domínio</option>
+        <option>Endereço_IP</option>
+        <option>Serviço</option>
+        <option>Software</option>
+        <option>Dispositivo_Industrial</option>
+        <option>CVE</option>
+        <option>Funcionário</option>
+        <option>Credencial_Vazada</option>
+        <option>Instalação_Física</option>
+        <option>Fornecedor</option>
+        <option>Esfera</option>
+        <option>Ferramentas</option>
+      </select>
+    </div>
+
+    <div><label>Eixo</label>
+      <select id="new-node-eixo">
+        <option value="central">central</option>
+        <option value="digital" selected>digital</option>
+        <option value="humano">humano</option>
+        <option value="fisico">fisico</option>
+        <option value="ecossistema">ecossistema</option>
+        <option value="ferramentas">ferramentas</option>
+      </select>
+    </div>
+
+    <p class="modal-note" id="add-node-parent-label">Nó raiz (sem pai)</p>
+
+    <div class="modal-actions">
+      <button class="btn-primary"   id="btn-confirm-add-node">Adicionar</button>
+      <button class="btn-secondary" id="btn-cancel-add-node">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Adicionar Aresta ─────────────────── -->
+<div class="modal-overlay" id="modal-add-edge" style="display:none">
+  <div class="modal">
+    <h3>→ Adicionar Aresta</h3>
+
+    <div><label>De (origem)</label>
+      <select id="new-edge-from"></select></div>
+
+    <div><label>Para (destino)</label>
+      <select id="new-edge-to"></select></div>
+
+    <div><label>Relação (Cypher)</label>
+      <select id="new-edge-rel">
+        <option>AGRUPA</option>
+        <option>CONTÉM</option>
+        <option>RESOLVE_PARA</option>
+        <option>EXPÕE</option>
+        <option>HOSPEDA</option>
+        <option>POSSUI_VULNERABILIDADE</option>
+        <option>TRABALHA_EM</option>
+        <option>POSSUI_CREDENCIAL_EXPOSTA</option>
+        <option>VIABILIZA_ACESSO_A</option>
+        <option>ABRIGA</option>
+        <option>MANTÉM_ACESSO_A</option>
+        <option>OPERA_SOBRE</option>
+        <option>ACESSA_DIRETAMENTE</option>
+        <option>PIVOT_LATERAL</option>
+        <option>COMUNICA_COM</option>
+        <option>ROTA_PARA</option>
+      </select>
+    </div>
+
+    <div><label>Impacto</label>
+      <select id="new-edge-impacto">
+        <option value="estrutural">Estrutural (interno ao eixo)</option>
+        <option value="Médio">Médio</option>
+        <option value="Alto">Alto</option>
+        <option value="Crítico">Crítico</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary"   id="btn-confirm-add-edge">Adicionar</button>
+      <button class="btn-secondary" id="btn-cancel-add-edge">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Inventário de Risco ──────────────── -->
+<div class="modal-overlay" id="modal-risk" style="display:none">
+  <div class="modal modal-wide">
+    <h3>⚠ Inventário de Risco — Arestas de Cruzamento</h3>
+    <div id="risk-counters" class="risk-counters"></div>
+    <div id="risk-table"    class="risk-table"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-close-risk">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

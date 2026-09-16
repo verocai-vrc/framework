@@ -1,0 +1,73 @@
+[project]
+name = "osintree"
+version = "0.1.0"
+description = "Passive OSINT attack-surface graph modeler (Neo4j + FastAPI + vis-network)."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Arthur Verocai" }]
+dependencies = [
+  "fastapi>=0.141,<1",
+  "uvicorn[standard]>=0.53,<1",
+  "neo4j>=6.3,<7",
+  "httpx>=0.28,<1",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.15,<3",
+  "python-multipart>=0.0.32",
+  "pywebview>=6.2,<7",
+]
+
+[project.optional-dependencies]
+# Native window backend for systems without GTK/WebKit2GTK (pip-only, no sudo).
+qt = ["pywebview[qt]>=6.2,<7"]
+dev = [
+  "pytest>=9.1,<10",
+  "pytest-asyncio>=1.4,<2",
+  "respx>=0.23,<1",
+  "ruff>=0.16,<1",
+]
+
+[project.scripts]
+osintree = "app.cli:main"
+
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "backend" }
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["app*"]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.1,<10",
+  "pytest-asyncio>=1.4,<2",
+  "respx>=0.23,<1",
+  "ruff>=0.16,<1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["backend"]
+extend-exclude = ["frontend/vendor", "reference"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "ASYNC", "SIM", "RUF"]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+  "neo4j: integration test that needs a live Neo4j (auto-skipped when unreachable)",
+]
+filterwarnings = ["error::DeprecationWarning:app.*"]
