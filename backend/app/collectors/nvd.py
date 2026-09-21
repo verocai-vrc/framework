@@ -13,6 +13,7 @@ from typing import Any
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     Finding,
     FindingEdge,
     InputKind,
@@ -112,7 +113,7 @@ class NvdCollector(Collector):
             if resp.status_code == 404:
                 continue  # NVD answers 404 for an unknown exact cpeName
             if resp.status_code != 200:
-                raise RuntimeError(f"NVD returned HTTP {resp.status_code}")
+                raise CollectorUpstreamError(f"NVD returned HTTP {resp.status_code}")
             body = resp.json()
             items = body.get("vulnerabilities") or []
             if items:

@@ -46,6 +46,13 @@ class CollectorInputError(DomainError):
     key = "error.collector_input"
 
 
+class CollectorUpstreamError(DomainError):
+    """The third-party source did not answer (timeout, DNS, connection refused, bad JSON)."""
+
+    status_code = 502
+    key = "error.collector_upstream"
+
+
 class FindingEdge(BaseModel):
     """An edge between the finding's node and an existing graph node."""
 

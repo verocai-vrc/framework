@@ -14,6 +14,7 @@ from typing import Any
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     Finding,
     FindingEdge,
     InputKind,
@@ -63,10 +64,12 @@ class BgpCollector(Collector):
             RIPESTAT.format(call=call), {"resource": resource, "sourceapp": "osintree"}
         )
         if resp.status_code != 200:
-            raise RuntimeError(f"RIPEstat {call} returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"RIPEstat {call} returned HTTP {resp.status_code}")
         body = resp.json()
         if body.get("status") != "ok":
-            raise RuntimeError(f"RIPEstat {call}: {body.get('status')} {body.get('messages')}")
+            raise CollectorUpstreamError(
+                f"RIPEstat {call}: {body.get('status')} {body.get('messages')}"
+            )
         return body
 
     async def collect(self, seed: str, ctx: RunContext) -> list[Finding]:

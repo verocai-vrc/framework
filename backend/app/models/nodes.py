@@ -130,7 +130,7 @@ class SoftwareAttrs(AttrModel):
     cpe: str | None = None
 
     def default_title(self) -> str:
-        return f"{self.product} {self.version}".strip()
+        return " ".join(p for p in (self.product, self.version) if p)
 
 
 class DispositivoIndustrialAttrs(AttrModel):

@@ -18,6 +18,8 @@ import httpx
 log = logging.getLogger(__name__)
 
 DEFAULT_TTL_S = 24 * 3600
+# For sources that legitimately take a minute (crt.sh wildcard queries, Wayback CDX scans).
+SLOW_SOURCE_TIMEOUT_S = 90.0
 RETRY_STATUSES = {429, 500, 502, 503, 504}
 
 
@@ -119,7 +121,9 @@ class CollectorHTTP:
         headers: dict[str, str] | None = None,
         use_cache: bool = True,
         retries: int = 3,
+        timeout_s: float | None = None,
     ) -> CachedResponse:
+        """``timeout_s`` overrides the client default for slow sources (crt.sh, CDX)."""
         path = self._cache_path(url, params)
         if use_cache and (cached := self._read_cache(path)) is not None:
             return cached
@@ -129,7 +133,12 @@ class CollectorHTTP:
         for attempt in range(retries):
             await self._throttle(host)
             try:
-                r = await self._client.get(url, params=params, headers=headers)
+                r = await self._client.get(
+                    url,
+                    params=params,
+                    headers=headers,
+                    timeout=timeout_s if timeout_s is not None else httpx.USE_CLIENT_DEFAULT,
+                )
             except httpx.HTTPError as exc:
                 last_exc = exc
                 log.info("%s attempt %d failed: %s", host, attempt + 1, exc)
@@ -147,4 +156,6 @@ class CollectorHTTP:
             delay *= 2
         if last_exc is not None:
             raise last_exc
-        raise httpx.HTTPStatusError("gave up after retries", request=r.request, response=r)
+        raise httpx.HTTPStatusError(
+            f"HTTP {r.status_code} after {retries} attempt(s)", request=r.request, response=r
+        )

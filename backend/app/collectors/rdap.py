@@ -15,6 +15,7 @@ from typing import Any
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     Finding,
     FindingEdge,
     InputKind,
@@ -141,7 +142,7 @@ class RdapCollector(Collector):
         base = pick_service(await self._bootstrap(ctx, family), ip, family)
         data = await self._rdap(ctx, base, f"ip/{ip}")
         if data is None:
-            raise RuntimeError(f"no RDAP answer for {ip}")
+            raise CollectorUpstreamError(f"no RDAP answer for {ip}")
         net = parse_ip_network(data)
         node = ctx.find_node(NodeLabel.ENDERECO_IP, "address", ip)
         findings: list[Finding] = []
@@ -222,7 +223,7 @@ class RdapCollector(Collector):
         base = pick_service(await self._bootstrap(ctx, "asn"), str(asn), "asn")
         data = await self._rdap(ctx, base, f"autnum/{asn}")
         if data is None:
-            raise RuntimeError(f"no RDAP answer for AS{asn}")
+            raise CollectorUpstreamError(f"no RDAP answer for AS{asn}")
         info = parse_autnum(data)
         holder = info["registrant"]["name"] or info["name"] or f"AS{asn}"
         ips = [n for n in ctx.nodes_with(NodeLabel.ENDERECO_IP) if n.attrs.get("asn") == asn]

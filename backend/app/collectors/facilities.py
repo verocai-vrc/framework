@@ -29,6 +29,7 @@ from typing import Any
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     Finding,
     FindingEdge,
     InputKind,
@@ -355,7 +356,7 @@ class FacilitiesCollector(Collector):
             headers={"Accept": "application/sparql-results+json"},
         )
         if resp.status_code != 200:
-            raise RuntimeError(f"Wikidata SPARQL returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"Wikidata SPARQL returned HTTP {resp.status_code}")
         return resp.json()
 
     async def _wikidata(
@@ -374,7 +375,7 @@ class FacilitiesCollector(Collector):
             },
         )
         if resp.status_code != 200:
-            raise RuntimeError(f"Wikidata search returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"Wikidata search returned HTTP {resp.status_code}")
         hits = parse_search(resp.json())
         if not hits:
             return None, []
@@ -397,7 +398,7 @@ class FacilitiesCollector(Collector):
     ) -> list[dict[str, Any]]:
         resp = await ctx.http.get(OVERPASS, {"data": overpass_query(org_name, country_code)})
         if resp.status_code != 200:
-            raise RuntimeError(f"Overpass returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"Overpass returned HTTP {resp.status_code}")
         return parse_overpass(resp.json(), org_name)
 
     async def collect(self, seed: str, ctx: RunContext) -> list[Finding]:

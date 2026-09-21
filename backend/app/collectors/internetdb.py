@@ -31,6 +31,7 @@ from typing import Any
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     Finding,
     FindingEdge,
     InputKind,
@@ -198,7 +199,7 @@ class InternetDbCollector(Collector):
         if resp.status_code == 404:
             return []  # Shodan has no record of this address
         if resp.status_code != 200:
-            raise RuntimeError(f"InternetDB returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"InternetDB returned HTTP {resp.status_code}")
         info = parse_internetdb(resp.json())
 
         ip_node = ctx.find_node(NodeLabel.ENDERECO_IP, "address", ip)

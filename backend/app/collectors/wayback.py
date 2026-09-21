@@ -23,7 +23,15 @@ from html.parser import HTMLParser
 from typing import Any
 from urllib.parse import urlsplit
 
-from app.collectors.base import Collector, Finding, FindingEdge, InputKind, RunContext
+from app.collectors.base import (
+    Collector,
+    CollectorUpstreamError,
+    Finding,
+    FindingEdge,
+    InputKind,
+    RunContext,
+)
+from app.collectors.http import SLOW_SOURCE_TIMEOUT_S
 from app.db.schema import Axis, NodeLabel, RelType
 
 CDX = "https://web.archive.org/cdx/search/cdx"
@@ -152,13 +160,15 @@ def text_blocks(html: str) -> list[str]:
 
 def cdx_rows(resp: Any) -> list[list[str]]:
     if resp.status_code != 200:
-        raise RuntimeError(f"Wayback CDX returned HTTP {resp.status_code}")
+        raise CollectorUpstreamError(f"Wayback CDX returned HTTP {resp.status_code}")
     if not resp.text.strip():
         return []
     try:
         rows = resp.json()
     except ValueError as exc:  # the archive answers maintenance pages as HTML
-        raise RuntimeError("Wayback CDX returned a non-JSON page (archive offline?)") from exc
+        raise CollectorUpstreamError(
+            "Wayback CDX returned a non-JSON page (archive offline?)"
+        ) from exc
     return rows if isinstance(rows, list) else []
 
 
@@ -300,6 +310,8 @@ class WaybackCollector(Collector):
                 "filter": "!statuscode:[45]..",
                 "limit": str(MAX_HOST_ROWS),
             },
+            timeout_s=SLOW_SOURCE_TIMEOUT_S,
+            retries=2,
         )
         rows = cdx_rows(resp)
         hosts = parse_cdx_hosts(rows, seed)
@@ -350,6 +362,8 @@ class WaybackPeopleCollector(Collector):
                 "filter": ["statuscode:200", "mimetype:text/html"],
                 "limit": str(MAX_HOST_ROWS),
             },
+            timeout_s=SLOW_SOURCE_TIMEOUT_S,
+            retries=2,
         )
         rows = cdx_rows(resp)
         pages = pick_people_pages(rows)

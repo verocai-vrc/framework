@@ -4,13 +4,18 @@
 from __future__ import annotations
 
 import ipaddress
+import json
 import logging
 import time
+from urllib.parse import urlsplit
+
+import httpx
 
 from app.collectors.active_example import ActiveProbeExample
 from app.collectors.base import (
     Collector,
     CollectorInputError,
+    CollectorUpstreamError,
     InputKind,
     PassiveGuardViolation,
     RunContext,
@@ -173,7 +178,26 @@ async def run(
 
     started = time.monotonic()
     log.info("collector %s: seed=%s project=%s", name, resolved, project_id)
-    findings = await collector.collect(resolved, ctx)
+    try:
+        findings = await collector.collect(resolved, ctx)
+    except CollectorUpstreamError as exc:
+        # Raised by the collector itself (non-200 answer, unexpected payload).
+        exc.extra.setdefault("collector", name)
+        exc.extra.setdefault("reason", exc.message)
+        log.warning("collector %s: upstream failure (%s)", name, exc.message)
+        raise
+    except httpx.HTTPError as exc:
+        # Network trouble is an expected outcome for a passive tool (slow crt.sh, offline
+        # laptop); surface it as a 502 with the host and cause instead of a bare 500.
+        host = (urlsplit(str(exc.request.url)).hostname if exc.request else None) or "upstream"
+        # httpx timeouts carry an empty message; the class name is the useful part then.
+        reason = f"{host}: {str(exc) or exc.__class__.__name__}"
+        log.warning("collector %s: upstream failure (%s)", name, reason)
+        raise CollectorUpstreamError(reason, collector=name, reason=reason) from exc
+    except json.JSONDecodeError as exc:
+        reason = f"unparsable response ({exc})"
+        log.warning("collector %s: upstream failure (%s)", name, reason)
+        raise CollectorUpstreamError(reason, collector=name, reason=reason) from exc
     staged, skipped_pending, skipped_in_graph = await staging.stage(
         db,
         project_id,

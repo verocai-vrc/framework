@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
@@ -59,23 +60,38 @@ def create_app() -> FastAPI:
     @app.exception_handler(DomainError)
     async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
         locale = request.headers.get("x-locale", settings.default_locale)
+        detail = t(exc.key, locale, **exc.extra) or exc.message
+        # The localised sentence for a rejected collector input is generic; the specific
+        # reason ("needs a domain seed") is what lets the analyst fix it.
+        if exc.key == "error.collector_input" and exc.message:
+            detail = f"{detail} {exc.message[0].upper()}{exc.message[1:]}."
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "detail": t(exc.key, locale, **exc.extra) or exc.message,
+                "detail": detail,
                 "code": exc.key,
                 "message": exc.message,
                 **exc.extra,
             },
         )
 
+    # Body validation raises FastAPI's RequestValidationError, not pydantic's ValidationError;
+    # both are flattened to one readable ``detail`` string (the UI shows it as-is).
     @app.exception_handler(ValidationError)
-    async def _validation_error(_: Request, exc: ValidationError) -> JSONResponse:
+    @app.exception_handler(RequestValidationError)
+    async def _validation_error(
+        _: Request, exc: ValidationError | RequestValidationError
+    ) -> JSONResponse:
+        raw = exc.errors(include_url=False) if isinstance(exc, ValidationError) else exc.errors()
         errors = [
-            {"loc": list(e.get("loc", ())), "msg": e.get("msg", "")}
-            for e in exc.errors(include_url=False)
+            {
+                # "body.attrs.address" -> "address": the field name is what the analyst typed in.
+                "loc": [str(x) for x in e.get("loc", ()) if x not in ("body", "attrs")],
+                "msg": str(e.get("msg", "")).removeprefix("Value error, "),
+            }
+            for e in raw
         ]
-        detail = "; ".join(f"{'.'.join(map(str, e['loc'])) or 'value'}: {e['msg']}" for e in errors)
+        detail = "; ".join(f"{'.'.join(e['loc']) or 'value'}: {e['msg']}" for e in errors)
         return JSONResponse(
             status_code=422,
             content={"detail": detail, "code": "error.validation", "errors": errors},

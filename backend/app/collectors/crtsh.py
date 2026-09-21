@@ -12,7 +12,15 @@ import re
 from collections import defaultdict
 from typing import Any
 
-from app.collectors.base import Collector, Finding, FindingEdge, InputKind, RunContext
+from app.collectors.base import (
+    Collector,
+    CollectorUpstreamError,
+    Finding,
+    FindingEdge,
+    InputKind,
+    RunContext,
+)
+from app.collectors.http import SLOW_SOURCE_TIMEOUT_S
 from app.db.schema import Axis, NodeLabel, RelType
 
 CRTSH_URL = "https://crt.sh/"
@@ -63,9 +71,15 @@ class CrtShCollector(Collector):
     input_label = NodeLabel.DOMINIO
 
     async def collect(self, seed: str, ctx: RunContext) -> list[Finding]:
-        resp = await ctx.http.get(CRTSH_URL, {"q": f"%.{seed}", "output": "json"})
+        # crt.sh routinely takes 30-60 s for wildcard queries; give it more than the default.
+        resp = await ctx.http.get(
+            CRTSH_URL,
+            {"q": f"%.{seed}", "output": "json"},
+            timeout_s=SLOW_SOURCE_TIMEOUT_S,
+            retries=2,  # one retry covers a transient 502; a third 90 s wait rarely helps
+        )
         if resp.status_code != 200:
-            raise RuntimeError(f"crt.sh returned HTTP {resp.status_code}")
+            raise CollectorUpstreamError(f"crt.sh returned HTTP {resp.status_code}")
         entries = resp.json() if resp.text.strip() else []
         hosts = parse_crtsh(entries, seed)
 
